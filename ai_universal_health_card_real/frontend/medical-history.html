@@ -1,0 +1,905 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+    <title>Medical History - AI Universal Health Card</title>
+
+    <style>
+      * {
+        box-sizing: border-box;
+      }
+
+      body {
+        margin: 0;
+        font-family: Arial, sans-serif;
+        background: #f3f7fc;
+        color: #172b4d;
+      }
+
+      .header {
+        background: #0d6efd;
+        color: white;
+        padding: 16px 8%;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+      }
+
+      .logo {
+        font-size: 21px;
+        font-weight: bold;
+      }
+
+      button {
+        border: none;
+        padding: 10px 18px;
+        border-radius: 6px;
+        cursor: pointer;
+        font-weight: bold;
+      }
+
+      .dashboard {
+        background: white;
+        color: #0d6efd;
+      }
+
+      .container {
+        width: 90%;
+        max-width: 1000px;
+        margin: 30px auto;
+      }
+
+      .card {
+        background: white;
+        padding: 30px;
+        border-radius: 15px;
+        box-shadow: 0 5px 20px rgba(0, 0, 0, 0.1);
+      }
+
+      h1 {
+        color: #0d6efd;
+        margin-bottom: 5px;
+      }
+
+      .subtitle {
+        color: #666;
+        margin-bottom: 25px;
+      }
+
+      .patient-id {
+        background: #eaf3ff;
+        border: 1px solid #b8d7ff;
+        padding: 14px;
+        border-radius: 8px;
+        margin-bottom: 25px;
+        font-weight: bold;
+      }
+
+      .database-info {
+        background: #e8f5e9;
+        border-left: 5px solid #198754;
+        padding: 14px;
+        border-radius: 8px;
+        margin-bottom: 20px;
+        color: #155724;
+      }
+
+      .section {
+        margin-top: 25px;
+      }
+
+      .section h2 {
+        color: #0d6efd;
+        border-bottom: 2px solid #e5e5e5;
+        padding-bottom: 8px;
+      }
+
+      .history-box {
+        background: #f8fafc;
+        padding: 20px;
+        border-radius: 8px;
+        border-left: 5px solid #0d6efd;
+        margin-bottom: 15px;
+        line-height: 1.6;
+      }
+
+      .history-box strong {
+        color: #333;
+      }
+
+      .empty {
+        color: #777;
+        font-style: italic;
+      }
+
+      .loading {
+        color: #0d6efd;
+        font-weight: bold;
+      }
+
+      .error {
+        background: #f8d7da;
+        color: #842029;
+        border-left: 5px solid #dc3545;
+        padding: 14px;
+        border-radius: 8px;
+        margin-bottom: 15px;
+      }
+
+      .add-section {
+        margin-top: 30px;
+        background: #f8fafc;
+        padding: 20px;
+        border-radius: 10px;
+      }
+
+      input,
+      textarea,
+      select {
+        width: 100%;
+        padding: 12px;
+        margin-top: 8px;
+        margin-bottom: 15px;
+        border: 1px solid #ccc;
+        border-radius: 6px;
+        font-size: 14px;
+      }
+
+      .save-btn {
+        background: #0d6efd;
+        color: white;
+      }
+
+      .save-btn:disabled {
+        background: #8db8f5;
+        cursor: not-allowed;
+      }
+
+      .back-btn {
+        background: #6c757d;
+        color: white;
+        margin-left: 8px;
+      }
+
+      .message {
+        display: none;
+        padding: 12px;
+        margin-top: 15px;
+        border-radius: 6px;
+      }
+
+      .success {
+        background: #d1e7dd;
+        color: #0f5132;
+      }
+
+      .message-error {
+        background: #f8d7da;
+        color: #842029;
+      }
+
+      @media (max-width: 650px) {
+        .container {
+          width: 94%;
+        }
+
+        .card {
+          padding: 20px;
+        }
+
+        .header {
+          padding: 15px 5%;
+        }
+      }
+    </style>
+  </head>
+
+  <body>
+    <header class="header">
+      <div class="logo">AI Universal Health Card</div>
+
+      <button class="dashboard" onclick="goDashboard()">Dashboard</button>
+    </header>
+
+    <div class="container">
+      <div class="card">
+        <h1>🏥 Medical History</h1>
+
+        <p class="subtitle">View and manage your medical history</p>
+
+        <!-- PATIENT ID -->
+
+        <div class="patient-id">
+          Patient ID:
+          <span id="patientId">Loading...</span>
+        </div>
+
+        <!-- DATABASE INFO -->
+
+        <div class="database-info">
+          ℹ️ Your medical history is stored securely in the backend MySQL
+          database.
+        </div>
+
+        <!-- MEDICAL RECORDS -->
+
+        <div class="section">
+          <h2>📋 Medical Records</h2>
+
+          <div id="historyContainer">
+            <div class="history-box">
+              <span class="loading"> Loading medical history... </span>
+            </div>
+          </div>
+        </div>
+
+        <!-- ADD HISTORY -->
+
+        <div class="add-section">
+          <h2>➕ Add Medical History</h2>
+
+          <label> Disease / Condition </label>
+
+          <input type="text" id="disease" placeholder="Example: Diabetes" />
+
+          <label> Diagnosis Date </label>
+
+          <input type="date" id="diagnosisDate" />
+
+          <label> Treatment / Medication </label>
+
+          <input type="text" id="treatment" placeholder="Example: Tablets" />
+
+          <label> Additional Notes </label>
+
+          <textarea
+            id="notes"
+            rows="4"
+            placeholder="Enter additional medical information"
+          ></textarea>
+
+          <button id="saveButton" class="save-btn" onclick="saveHistory()">
+            💾 Save Medical History
+          </button>
+
+          <button class="back-btn" onclick="goDashboard()">← Back</button>
+
+          <div id="message" class="message"></div>
+        </div>
+      </div>
+    </div>
+
+    <script>
+      /* =====================================================
+   BACKEND URL
+===================================================== */
+
+      const API_BASE_URL = "http://127.0.0.1:8000";
+
+      /* =====================================================
+   GET LOGIN TOKEN
+===================================================== */
+
+      function getAccessToken() {
+        const possibleKeys = ["access_token", "accessToken", "token"];
+
+        for (const key of possibleKeys) {
+          const value = localStorage.getItem(key);
+
+          if (value) {
+            return value;
+          }
+        }
+
+        return null;
+      }
+
+      /* =====================================================
+   AUTHORIZATION HEADER
+===================================================== */
+
+      function getAuthHeaders() {
+        const token = getAccessToken();
+
+        return {
+          Accept: "application/json",
+          "Content-Type": "application/json",
+          Authorization: "Bearer " + token,
+        };
+      }
+
+      /* =====================================================
+   LOGIN CHECK
+===================================================== */
+
+      function checkLogin() {
+        const token = getAccessToken();
+
+        if (!token) {
+          showError("Login token not found. Please login again.");
+
+          return false;
+        }
+
+        return true;
+      }
+
+      /* =====================================================
+   SHOW ERROR
+===================================================== */
+
+      function showError(message) {
+        const container = document.getElementById("historyContainer");
+
+        container.innerHTML = `
+    <div class="error">
+      ${message}
+    </div>
+  `;
+      }
+
+      /* =====================================================
+   SHOW MESSAGE
+===================================================== */
+
+      function showMessage(message, success = true) {
+        const box = document.getElementById("message");
+
+        box.style.display = "block";
+
+        box.className = success ? "message success" : "message message-error";
+
+        box.innerText = message;
+      }
+
+      /* =====================================================
+   LOAD PATIENT PROFILE
+===================================================== */
+
+      async function loadPatientProfile() {
+        const token = getAccessToken();
+
+        if (!token) {
+          return;
+        }
+
+        try {
+          const response = await fetch(API_BASE_URL + "/api/patient/profile", {
+            method: "GET",
+            headers: getAuthHeaders(),
+          });
+
+          if (response.status === 401) {
+            showError("Session expired. Please login again.");
+
+            return;
+          }
+
+          if (!response.ok) {
+            throw new Error("Unable to load patient profile");
+          }
+
+          const data = await response.json();
+
+          if (data.profile && data.profile.card_id) {
+            document.getElementById("patientId").innerText =
+              data.profile.card_id;
+          }
+        } catch (error) {
+          console.error("Profile error:", error);
+
+          document.getElementById("patientId").innerText = "--";
+        }
+      }
+
+      /* =====================================================
+   LOAD MEDICAL HISTORY FROM MYSQL
+===================================================== */
+
+      async function loadMedicalHistory() {
+        const container = document.getElementById("historyContainer");
+
+        container.innerHTML = `
+    <div class="history-box">
+      <span class="loading">
+        Loading medical history...
+      </span>
+    </div>
+  `;
+
+        const token = getAccessToken();
+
+        if (!token) {
+          showError("Login token not found. Please login again.");
+
+          return;
+        }
+
+        try {
+          const response = await fetch(API_BASE_URL + "/api/patient/history", {
+            method: "GET",
+            headers: getAuthHeaders(),
+          });
+
+          console.log("History response status:", response.status);
+
+          if (response.status === 401) {
+            showError("Session expired. Please login again.");
+
+            return;
+          }
+
+          if (!response.ok) {
+            throw new Error("Failed to load medical history");
+          }
+
+          const history = await response.json();
+
+          console.log("Medical history from backend:", history);
+
+          displayHistory(history);
+        } catch (error) {
+          console.error("Medical history error:", error);
+
+          showError("Unable to load medical history from backend.");
+        }
+      }
+
+      /* =====================================================
+   DISPLAY MEDICAL HISTORY
+===================================================== */
+
+      function displayHistory(history) {
+        const container = document.getElementById("historyContainer");
+
+        container.innerHTML = "";
+
+        let hasData = false;
+
+        /* =========================
+     DISEASES
+  ========================= */
+
+        if (Array.isArray(history.diseases) && history.diseases.length > 0) {
+          history.diseases.forEach(function (disease) {
+            if (disease && disease !== "No known chronic disease") {
+              hasData = true;
+
+              const box = document.createElement("div");
+
+              box.className = "history-box";
+
+              box.innerHTML = `
+            <strong>
+              🩺 Disease / Condition:
+            </strong>
+            ${escapeHtml(disease)}
+          `;
+
+              container.appendChild(box);
+            }
+          });
+        }
+
+        /* =========================
+     ALLERGIES
+  ========================= */
+
+        if (Array.isArray(history.allergies) && history.allergies.length > 0) {
+          history.allergies.forEach(function (allergy) {
+            if (allergy && allergy !== "No known drug allergy") {
+              hasData = true;
+
+              const box = document.createElement("div");
+
+              box.className = "history-box";
+
+              box.innerHTML = `
+            <strong>
+              ⚠️ Allergy:
+            </strong>
+            ${escapeHtml(allergy)}
+          `;
+
+              container.appendChild(box);
+            }
+          });
+        }
+
+        /* =========================
+     CURRENT MEDICATIONS
+  ========================= */
+
+        if (
+          Array.isArray(history.current_medications) &&
+          history.current_medications.length > 0
+        ) {
+          history.current_medications.forEach(function (medicine) {
+            if (medicine) {
+              hasData = true;
+
+              const box = document.createElement("div");
+
+              box.className = "history-box";
+
+              box.innerHTML = `
+            <strong>
+              💊 Current Medication:
+            </strong>
+            ${escapeHtml(medicine)}
+          `;
+
+              container.appendChild(box);
+            }
+          });
+        }
+
+        /* =========================
+     SURGERY HISTORY
+  ========================= */
+
+        if (
+          Array.isArray(history.surgery_history) &&
+          history.surgery_history.length > 0
+        ) {
+          history.surgery_history.forEach(function (surgery) {
+            if (surgery) {
+              hasData = true;
+
+              const box = document.createElement("div");
+
+              box.className = "history-box";
+
+              box.innerHTML = `
+            <strong>
+              🏥 Surgery:
+            </strong>
+            ${escapeHtml(surgery)}
+          `;
+
+              container.appendChild(box);
+            }
+          });
+        }
+
+        /* =========================
+     VACCINATION
+  ========================= */
+
+        if (
+          Array.isArray(history.vaccination_records) &&
+          history.vaccination_records.length > 0
+        ) {
+          history.vaccination_records.forEach(function (vaccination) {
+            if (vaccination) {
+              hasData = true;
+
+              const box = document.createElement("div");
+
+              box.className = "history-box";
+
+              box.innerHTML = `
+            <strong>
+              💉 Vaccination:
+            </strong>
+            ${escapeHtml(vaccination)}
+          `;
+
+              container.appendChild(box);
+            }
+          });
+        }
+
+        /* =========================
+     INSURANCE
+  ========================= */
+
+        if (
+          history.insurance_details &&
+          Object.keys(history.insurance_details).length > 0
+        ) {
+          hasData = true;
+
+          const box = document.createElement("div");
+
+          box.className = "history-box";
+
+          box.innerHTML = `
+      <strong>
+        🛡️ Insurance Details:
+      </strong>
+      ${escapeHtml(JSON.stringify(history.insurance_details))}
+    `;
+
+          container.appendChild(box);
+        }
+
+        /* =========================
+     NOTES
+  ========================= */
+
+        if (
+          history.notes &&
+          history.notes !== "string" &&
+          history.notes.trim() !== ""
+        ) {
+          hasData = true;
+
+          const box = document.createElement("div");
+
+          box.className = "history-box";
+
+          box.innerHTML = `
+      <strong>
+        📝 Medical Notes:
+      </strong>
+      <br>
+      ${escapeHtml(history.notes)}
+    `;
+
+          container.appendChild(box);
+        }
+
+        /* =========================
+     EMPTY
+  ========================= */
+
+        if (!hasData) {
+          container.innerHTML = `
+      <div class="history-box">
+        <span class="empty">
+          No medical history added yet.
+        </span>
+      </div>
+    `;
+        }
+      }
+
+      /* =====================================================
+   SAVE MEDICAL HISTORY TO MYSQL
+===================================================== */
+
+      async function saveHistory() {
+        const disease = document.getElementById("disease").value.trim();
+
+        const diagnosisDate = document.getElementById("diagnosisDate").value;
+
+        const treatment = document.getElementById("treatment").value.trim();
+
+        const notes = document.getElementById("notes").value.trim();
+
+        /* =========================
+     VALIDATION
+  ========================= */
+
+        if (!disease) {
+          alert("Please enter Disease / Condition.");
+
+          return;
+        }
+
+        const token = getAccessToken();
+
+        if (!token) {
+          showMessage("Login token not found. Please login again.", false);
+
+          return;
+        }
+
+        const saveButton = document.getElementById("saveButton");
+
+        saveButton.disabled = true;
+
+        saveButton.innerText = "Saving...";
+
+        try {
+          /* =========================
+       GET EXISTING DATA
+    ========================= */
+
+          const getResponse = await fetch(
+            API_BASE_URL + "/api/patient/history",
+            {
+              method: "GET",
+              headers: getAuthHeaders(),
+            },
+          );
+
+          if (!getResponse.ok) {
+            throw new Error("Unable to get existing history");
+          }
+
+          const existing = await getResponse.json();
+
+          /* =========================
+       PREPARE ARRAYS
+    ========================= */
+
+          let diseases = Array.isArray(existing.diseases)
+            ? [...existing.diseases]
+            : [];
+
+          let medications = Array.isArray(existing.current_medications)
+            ? [...existing.current_medications]
+            : [];
+
+          /* =========================
+       REMOVE DEFAULT VALUES
+    ========================= */
+
+          diseases = diseases.filter(
+            (item) => item !== "No known chronic disease",
+          );
+
+          medications = medications.filter((item) => item !== "");
+
+          /* =========================
+       ADD NEW DISEASE
+    ========================= */
+
+          diseases.push(disease);
+
+          /* =========================
+       ADD MEDICATION
+    ========================= */
+
+          if (treatment) {
+            medications.push(treatment);
+          }
+
+          /* =========================
+       CREATE NOTE
+    ========================= */
+
+          let newNote = `Disease: ${disease}`;
+
+          if (diagnosisDate) {
+            newNote += ` | Diagnosis Date: ${diagnosisDate}`;
+          }
+
+          if (notes) {
+            newNote += ` | Notes: ${notes}`;
+          }
+
+          let oldNotes = existing.notes || "";
+
+          if (oldNotes === "string") {
+            oldNotes = "";
+          }
+
+          const finalNotes = oldNotes ? oldNotes + "\n" + newNote : newNote;
+
+          /* =========================
+       CREATE REQUEST BODY
+    ========================= */
+
+          const requestBody = {
+            diseases: diseases,
+
+            allergies: Array.isArray(existing.allergies)
+              ? existing.allergies
+              : [],
+
+            current_medications: medications,
+
+            surgery_history: Array.isArray(existing.surgery_history)
+              ? existing.surgery_history
+              : [],
+
+            vaccination_records: Array.isArray(existing.vaccination_records)
+              ? existing.vaccination_records
+              : [],
+
+            insurance_details: existing.insurance_details || {},
+
+            notes: finalNotes,
+          };
+
+          console.log("Sending to backend:", requestBody);
+
+          /* =========================
+       PUT TO MYSQL BACKEND
+    ========================= */
+
+          const response = await fetch(API_BASE_URL + "/api/patient/history", {
+            method: "PUT",
+
+            headers: getAuthHeaders(),
+
+            body: JSON.stringify(requestBody),
+          });
+
+          const result = await response.json();
+
+          console.log("Backend save response:", result);
+
+          if (!response.ok) {
+            throw new Error(result.detail || "Failed to save medical history");
+          }
+
+          /* =========================
+       SUCCESS
+    ========================= */
+
+          showMessage(
+            "✅ Medical history saved successfully to MySQL database.",
+            true,
+          );
+
+          /* =========================
+       CLEAR FORM
+    ========================= */
+
+          document.getElementById("disease").value = "";
+
+          document.getElementById("diagnosisDate").value = "";
+
+          document.getElementById("treatment").value = "";
+
+          document.getElementById("notes").value = "";
+
+          /* =========================
+       RELOAD FROM DATABASE
+    ========================= */
+
+          await loadMedicalHistory();
+        } catch (error) {
+          console.error("Save error:", error);
+
+          showMessage("❌ " + error.message, false);
+        } finally {
+          saveButton.disabled = false;
+
+          saveButton.innerText = "💾 Save Medical History";
+        }
+      }
+
+      /* =====================================================
+   HTML ESCAPE
+===================================================== */
+
+      function escapeHtml(value) {
+        if (value === null || value === undefined) {
+          return "";
+        }
+
+        return String(value)
+          .replace(/&/g, "&amp;")
+          .replace(/</g, "&lt;")
+          .replace(/>/g, "&gt;")
+          .replace(/"/g, "&quot;")
+          .replace(/'/g, "&#039;");
+      }
+
+      /* =====================================================
+   DASHBOARD
+===================================================== */
+
+      function goDashboard() {
+        window.location.href = "dashboard.html";
+      }
+
+      /* =====================================================
+   INITIAL LOAD
+===================================================== */
+
+      async function initializePage() {
+        if (!checkLogin()) {
+          return;
+        }
+
+        await loadPatientProfile();
+
+        await loadMedicalHistory();
+      }
+
+      /* =====================================================
+   START
+===================================================== */
+
+      initializePage();
+    </script>
+  </body>
+</html>

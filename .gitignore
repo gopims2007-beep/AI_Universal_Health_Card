@@ -1,0 +1,10 @@
+.venv/
+__pycache__/
+*.pyc
+.env
+*.log
+node_modules/
+
+ai_universal_health_card_backup/
+
+ai_universal_health_card_backup/

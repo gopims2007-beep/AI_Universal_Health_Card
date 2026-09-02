@@ -1,0 +1,353 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+    <title>Patient Login - AI Universal Health Card</title>
+
+    <style>
+      * {
+        box-sizing: border-box;
+      }
+
+      body {
+        margin: 0;
+        font-family: Arial, sans-serif;
+        background: #f4f7fb;
+      }
+
+      .header {
+        height: 60px;
+        background: #0d6efd;
+        color: white;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 0 8%;
+      }
+
+      .logo {
+        font-size: 21px;
+        font-weight: bold;
+      }
+
+      .home-btn {
+        background: white;
+        color: #0d6efd;
+        border: none;
+        padding: 9px 16px;
+        border-radius: 5px;
+        cursor: pointer;
+      }
+
+      .container {
+        width: 90%;
+        max-width: 450px;
+        margin: 60px auto;
+      }
+
+      .card {
+        background: white;
+        padding: 35px;
+        border-radius: 12px;
+        box-shadow: 0 4px 18px rgba(0, 0, 0, 0.08);
+      }
+
+      h1 {
+        text-align: center;
+        color: #172b4d;
+      }
+
+      .subtitle {
+        text-align: center;
+        color: #666;
+        margin-bottom: 30px;
+      }
+
+      .form-group {
+        margin-bottom: 20px;
+      }
+
+      label {
+        display: block;
+        margin-bottom: 7px;
+        font-weight: bold;
+      }
+
+      input {
+        width: 100%;
+        padding: 12px;
+        border: 1px solid #ccd3dd;
+        border-radius: 6px;
+        font-size: 15px;
+      }
+
+      .login-btn {
+        width: 100%;
+        padding: 13px;
+        background: #0d6efd;
+        color: white;
+        border: none;
+        border-radius: 6px;
+        font-size: 16px;
+        font-weight: bold;
+        cursor: pointer;
+      }
+
+      .login-btn:disabled {
+        background: #7aaef8;
+        cursor: not-allowed;
+      }
+
+      .message {
+        margin-top: 15px;
+        text-align: center;
+        font-weight: bold;
+        min-height: 20px;
+      }
+
+      .register-text {
+        text-align: center;
+        margin-top: 20px;
+        color: #666;
+      }
+
+      .register-text a {
+        color: #0d6efd;
+        font-weight: bold;
+        text-decoration: none;
+      }
+    </style>
+  </head>
+
+  <body>
+    <header class="header">
+      <div class="logo">AI Universal Health Card</div>
+
+      <button class="home-btn" onclick="window.location.href = 'index.html'">
+        Home
+      </button>
+    </header>
+
+    <div class="container">
+      <div class="card">
+        <h1>Patient Login</h1>
+
+        <p class="subtitle">Login to your Health Card account</p>
+
+        <form id="loginForm">
+          <!-- EMAIL -->
+
+          <div class="form-group">
+            <label for="loginEmail"> Email </label>
+
+            <input
+              type="email"
+              id="loginEmail"
+              placeholder="Enter registered email"
+              autocomplete="email"
+              required
+            />
+          </div>
+
+          <!-- PASSWORD -->
+
+          <div class="form-group">
+            <label for="loginPassword"> Password </label>
+
+            <input
+              type="password"
+              id="loginPassword"
+              placeholder="Enter password"
+              autocomplete="current-password"
+              required
+            />
+          </div>
+
+          <button type="submit" class="login-btn" id="loginButton">
+            Login
+          </button>
+
+          <div id="loginMessage" class="message"></div>
+        </form>
+
+        <div class="register-text">
+          Don't have an account?
+
+          <a href="register.html"> Register </a>
+        </div>
+      </div>
+    </div>
+
+    <script>
+      /* =========================================
+         BACKEND API
+      ========================================= */
+
+      const API_BASE_URL = window.location.origin;
+
+      /* =========================================
+         LOGIN FORM
+      ========================================= */
+
+      document
+        .getElementById("loginForm")
+        .addEventListener("submit", async function (event) {
+          event.preventDefault();
+
+          const email = document.getElementById("loginEmail").value.trim();
+
+          const password = document.getElementById("loginPassword").value;
+
+          const message = document.getElementById("loginMessage");
+
+          const loginButton = document.getElementById("loginButton");
+
+          /* CLEAR OLD MESSAGE */
+
+          message.innerText = "";
+          message.style.color = "";
+
+          /* VALIDATION */
+
+          if (!email || !password) {
+            message.style.color = "#b00020";
+            message.innerText = "Please enter email and password.";
+
+            return;
+          }
+
+          /* DISABLE BUTTON */
+
+          loginButton.disabled = true;
+          loginButton.innerText = "Logging in...";
+
+          try {
+            /* =========================================
+               CALL BACKEND LOGIN API
+            ========================================= */
+
+            const response = await fetch(`${API_BASE_URL}/api/auth/login`, {
+              method: "POST",
+
+              headers: {
+                "Content-Type": "application/json",
+                Accept: "application/json",
+              },
+
+              body: JSON.stringify({
+                email: email,
+                password: password,
+              }),
+            });
+
+            /* =========================================
+               READ RESPONSE
+            ========================================= */
+
+            const data = await response.json();
+
+            /* =========================================
+               LOGIN FAILED
+            ========================================= */
+
+            if (!response.ok) {
+              let errorMessage = "Login failed. Please check your details.";
+
+              if (data.detail) {
+                if (typeof data.detail === "string") {
+                  errorMessage = data.detail;
+                } else if (Array.isArray(data.detail)) {
+                  errorMessage = data.detail
+                    .map((item) => item.msg || "Invalid input")
+                    .join(", ");
+                }
+              }
+
+              message.style.color = "#b00020";
+              message.innerText = errorMessage;
+
+              return;
+            }
+
+            /* =========================================
+               CHECK ACCESS TOKEN
+            ========================================= */
+
+            if (!data.access_token) {
+              message.style.color = "#b00020";
+
+              message.innerText =
+                "Login successful, but access token was not received.";
+
+              console.error("Login response:", data);
+
+              return;
+            }
+
+            /* =========================================
+               SAVE ACCESS TOKEN
+            ========================================= */
+
+            localStorage.setItem("access_token", data.access_token);
+
+            /* =========================================
+               SAVE REFRESH TOKEN
+            ========================================= */
+
+            if (data.refresh_token) {
+              localStorage.setItem("refresh_token", data.refresh_token);
+            }
+
+            /* =========================================
+               SAVE TOKEN TYPE
+            ========================================= */
+
+            localStorage.setItem("token_type", data.token_type || "bearer");
+
+            /* =========================================
+               SAVE LOGIN STATUS
+            ========================================= */
+
+            localStorage.setItem("isLoggedIn", "true");
+
+            /* =========================================
+               SAVE LOGIN EMAIL
+            ========================================= */
+
+            localStorage.setItem("loginEmail", email);
+
+            /* =========================================
+               SUCCESS
+            ========================================= */
+
+            message.style.color = "#198754";
+
+            message.innerText = "Login successful!";
+
+            console.log("ACCESS TOKEN SAVED:", data.access_token);
+
+            /* =========================================
+               GO TO DASHBOARD
+            ========================================= */
+
+            setTimeout(function () {
+              window.location.href = "dashboard.html";
+            }, 700);
+          } catch (error) {
+            console.error("Login error:", error);
+
+            message.style.color = "#b00020";
+
+            message.innerText =
+              "Unable to connect to server. Please make sure the backend is running.";
+          } finally {
+            loginButton.disabled = false;
+
+            loginButton.innerText = "Login";
+          }
+        });
+    </script>
+  </body>
+</html>

@@ -1,0 +1,746 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+    <title>AI Medical Analysis - AI Universal Health Card</title>
+
+    <style>
+      * {
+        box-sizing: border-box;
+      }
+
+      body {
+        margin: 0;
+        font-family: Arial, sans-serif;
+        background: #f4f7fb;
+        color: #172b4d;
+      }
+
+      .header {
+        background: #0d6efd;
+        color: white;
+        padding: 15px 8%;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+      }
+
+      .logo {
+        font-size: 21px;
+        font-weight: bold;
+      }
+
+      .header button {
+        background: white;
+        color: #0d6efd;
+        border: none;
+        padding: 9px 15px;
+        border-radius: 5px;
+        margin-left: 8px;
+        cursor: pointer;
+        font-weight: bold;
+      }
+
+      .container {
+        width: 90%;
+        max-width: 1100px;
+        margin: 35px auto;
+      }
+
+      h1 {
+        margin-bottom: 5px;
+      }
+
+      .subtitle {
+        color: #666;
+        margin-bottom: 25px;
+      }
+
+      .card {
+        background: white;
+        padding: 25px;
+        border-radius: 10px;
+        margin-bottom: 25px;
+        box-shadow: 0 3px 12px rgba(0, 0, 0, 0.08);
+      }
+
+      .patient-box {
+        background: #eef5ff;
+        border: 1px solid #cfe2ff;
+        padding: 12px;
+        border-radius: 6px;
+        margin-bottom: 20px;
+      }
+
+      .report-select {
+        width: 100%;
+        padding: 12px;
+        border: 1px solid #ccd3dd;
+        border-radius: 6px;
+        font-size: 15px;
+        margin-bottom: 15px;
+      }
+
+      .analyze-btn {
+        width: 100%;
+        padding: 13px;
+        background: #0d6efd;
+        color: white;
+        border: none;
+        border-radius: 6px;
+        font-size: 16px;
+        font-weight: bold;
+        cursor: pointer;
+      }
+
+      .analyze-btn:hover {
+        background: #0b5ed7;
+      }
+
+      .result {
+        display: none;
+      }
+
+      .summary {
+        background: #eef5ff;
+        padding: 18px;
+        border-radius: 8px;
+        margin-bottom: 20px;
+        line-height: 1.6;
+      }
+
+      .risk {
+        padding: 18px;
+        border-radius: 8px;
+        margin-bottom: 20px;
+        font-weight: bold;
+      }
+
+      .low {
+        background: #d1e7dd;
+        color: #0f5132;
+      }
+
+      .moderate {
+        background: #fff3cd;
+        color: #664d03;
+      }
+
+      .high {
+        background: #f8d7da;
+        color: #842029;
+      }
+
+      .section-title {
+        margin-top: 25px;
+        color: #0d6efd;
+      }
+
+      .analysis-item {
+        padding: 12px;
+        border-left: 4px solid #0d6efd;
+        background: #f8f9fa;
+        margin-bottom: 10px;
+        border-radius: 4px;
+      }
+
+      .recommendation {
+        background: #f8f9fa;
+        padding: 15px;
+        border-radius: 8px;
+        margin-bottom: 10px;
+      }
+
+      .disclaimer {
+        background: #fff3cd;
+        color: #664d03;
+        padding: 15px;
+        border-radius: 8px;
+        margin-top: 20px;
+        line-height: 1.5;
+      }
+
+      .empty {
+        text-align: center;
+        color: #777;
+        padding: 20px;
+      }
+
+      @media (max-width: 700px) {
+        .header {
+          padding: 15px 4%;
+        }
+
+        .logo {
+          font-size: 16px;
+        }
+
+        .container {
+          width: 94%;
+        }
+      }
+    </style>
+  </head>
+
+  <body>
+    <header class="header">
+      <div class="logo">AI Universal Health Card</div>
+
+      <div>
+        <button onclick="goDashboard()">Dashboard</button>
+
+        <button onclick="logout()">Logout</button>
+      </div>
+    </header>
+
+    <div class="container">
+      <h1>🤖 AI Medical Report Analysis</h1>
+
+      <p class="subtitle">
+        Analyze your uploaded medical reports using AI-based health assessment.
+      </p>
+
+      <!-- PATIENT -->
+
+      <div class="card">
+        <div class="patient-box">
+          <strong> Patient ID: </strong>
+
+          <span id="patientId"> Loading... </span>
+        </div>
+
+        <h3>Select Medical Report</h3>
+
+        <select id="reportSelect" class="report-select">
+          <option value="">Select an uploaded report</option>
+        </select>
+
+        <button class="analyze-btn" onclick="analyzeReport()">
+          🤖 Analyze Medical Report
+        </button>
+      </div>
+
+      <!-- AI RESULT -->
+
+      <div id="result" class="card result">
+        <h2>🧠 AI Health Analysis Result</h2>
+
+        <div class="summary">
+          <strong> Report: </strong>
+
+          <span id="resultReport"> -- </span>
+
+          <br />
+
+          <strong> Analysis Date: </strong>
+
+          <span id="analysisDate"> -- </span>
+        </div>
+
+        <!-- RISK -->
+
+        <h3 class="section-title">⚠️ Health Risk Assessment</h3>
+
+        <div id="riskBox" class="risk">--</div>
+
+        <!-- FINDINGS -->
+
+        <h3 class="section-title">🔍 Key Findings</h3>
+
+        <div id="findings"></div>
+
+        <!-- SUMMARY -->
+
+        <h3 class="section-title">📊 Health Summary</h3>
+
+        <div id="healthSummary"></div>
+
+        <!-- RECOMMENDATIONS -->
+
+        <h3 class="section-title">💡 Recommendations</h3>
+
+        <div id="recommendations"></div>
+
+        <!-- DISCLAIMER -->
+
+        <div class="disclaimer">
+          <strong> ⚠️ Important: </strong>
+
+          This AI analysis is a demonstration/ decision-support feature and is
+          not a medical diagnosis. Always consult a qualified healthcare
+          professional for diagnosis and treatment decisions.
+        </div>
+      </div>
+
+      <!-- NO REPORT -->
+
+      <div id="noReport" class="card empty">
+        No medical reports available. Please upload a report first.
+      </div>
+    </div>
+
+    <script>
+      /* =========================================================
+   AI MEDICAL ANALYSIS
+   Backend API Version
+   ========================================================= */
+
+      const API_BASE = window.location.origin;
+
+      /* =========================================================
+   GET LOGIN TOKEN
+   ========================================================= */
+
+      function getAccessToken() {
+        return (
+          localStorage.getItem("access_token") ||
+          localStorage.getItem("accessToken") ||
+          localStorage.getItem("token") ||
+          ""
+        );
+      }
+
+      const accessToken = getAccessToken();
+
+      /* =========================================================
+   LOGIN CHECK
+   ========================================================= */
+
+      if (!accessToken) {
+        alert("Login session expired. Please login again.");
+        window.location.href = "login.html";
+      }
+
+      /* =========================================================
+   ELEMENTS
+   ========================================================= */
+
+      const patientIdElement = document.getElementById("patientId");
+      const reportSelect = document.getElementById("reportSelect");
+      const noReport = document.getElementById("noReport");
+      const result = document.getElementById("result");
+
+      /* =========================================================
+   API HELPER
+   ========================================================= */
+
+      async function apiRequest(url, options = {}) {
+        const token = getAccessToken();
+
+        if (!token) {
+          throw new Error("Login token not found");
+        }
+
+        const headers = {
+          Accept: "application/json",
+          Authorization: "Bearer " + token,
+          ...(options.headers || {}),
+        };
+
+        const response = await fetch(url, {
+          ...options,
+          headers,
+        });
+
+        if (response.status === 401) {
+          localStorage.removeItem("access_token");
+          localStorage.removeItem("accessToken");
+          localStorage.removeItem("token");
+          localStorage.removeItem("isLoggedIn");
+
+          throw new Error("Invalid or expired access token");
+        }
+
+        if (response.status === 403) {
+          throw new Error("Not authenticated");
+        }
+
+        if (!response.ok) {
+          let errorText = "API request failed";
+
+          try {
+            const errorData = await response.json();
+
+            if (errorData.detail) {
+              errorText = errorData.detail;
+            }
+          } catch (e) {
+            // Ignore JSON parsing error
+          }
+
+          throw new Error(errorText);
+        }
+
+        return await response.json();
+      }
+
+      /* =========================================================
+   LOAD PATIENT PROFILE
+   ========================================================= */
+
+      async function loadPatientProfile() {
+        try {
+          const data = await apiRequest(API_BASE + "/api/patient/profile");
+
+          console.log("Patient Profile:", data);
+
+          patientIdElement.innerText =
+            data.patient_id || data.patientId || data.id || "--";
+        } catch (error) {
+          console.error("Patient profile error:", error);
+
+          /*
+      Profile API may not be available in some versions.
+      We don't stop the reports page because reports
+      themselves are more important.
+    */
+
+          patientIdElement.innerText = "--";
+        }
+      }
+
+      /* =========================================================
+   LOAD ALL MEDICAL REPORTS FROM BACKEND
+   ========================================================= */
+
+      async function loadReports() {
+        try {
+          reportSelect.innerHTML =
+            '<option value="">Loading medical reports...</option>';
+
+          noReport.style.display = "none";
+
+          const reports = await apiRequest(API_BASE + "/api/reports");
+
+          console.log("Backend Reports:", reports);
+
+          reportSelect.innerHTML =
+            '<option value="">Select an uploaded report</option>';
+
+          if (!Array.isArray(reports) || reports.length === 0) {
+            noReport.style.display = "block";
+
+            noReport.innerText =
+              "No medical reports available. Please upload a report first.";
+
+            return;
+          }
+
+          noReport.style.display = "none";
+
+          /*
+      IMPORTANT:
+      Backend gives report objects like:
+
+      {
+        id: 1,
+        report_type: "Blood Test",
+        filename: "medical.pdf",
+        mime_type: "application/pdf",
+        size_bytes: 3500,
+        uploaded_at: "2026-08-16T..."
+      }
+    */
+
+          reports.forEach(function (report) {
+            const option = document.createElement("option");
+
+            option.value = report.id;
+
+            const reportType =
+              report.report_type || report.type || "Medical Report";
+
+            const fileName =
+              report.filename || report.fileName || "Unknown File";
+
+            let uploadDate = "";
+
+            if (report.uploaded_at) {
+              uploadDate = new Date(report.uploaded_at).toLocaleString();
+            }
+
+            option.textContent =
+              reportType +
+              " - " +
+              fileName +
+              (uploadDate ? " - " + uploadDate : "");
+
+            /*
+        Save complete backend report
+        inside option for later use.
+      */
+
+            option.dataset.report = JSON.stringify(report);
+
+            reportSelect.appendChild(option);
+          });
+
+          console.log("Total reports loaded:", reports.length);
+        } catch (error) {
+          console.error("Load reports error:", error);
+
+          reportSelect.innerHTML =
+            '<option value="">Unable to load reports</option>';
+
+          noReport.style.display = "block";
+
+          noReport.innerHTML =
+            "<strong>Unable to load medical reports.</strong><br><br>" +
+            error.message +
+            "<br><br>" +
+            "Please login again if your session has expired.";
+        }
+      }
+
+      /* =========================================================
+   ANALYZE SELECTED REPORT
+   ========================================================= */
+
+      async function analyzeReport() {
+        const selectedOption = reportSelect.options[reportSelect.selectedIndex];
+
+        if (!selectedOption || !selectedOption.value) {
+          alert("Please select a medical report.");
+
+          return;
+        }
+
+        const reportId = selectedOption.value;
+
+        const report = JSON.parse(selectedOption.dataset.report);
+
+        console.log("Selected Report:", report);
+
+        /* -------------------------------------------------------
+     SHOW LOADING
+     ------------------------------------------------------- */
+
+        const button = document.querySelector(".analyze-btn");
+
+        const oldButtonText = button.innerText;
+
+        button.disabled = true;
+
+        button.innerText = "🤖 AI Analysis in progress...";
+
+        try {
+          /* -----------------------------------------------------
+       CALL BACKEND AI ANALYSIS API
+       POST /api/reports/{report_id}/analyze
+       ----------------------------------------------------- */
+
+          const analysis = await apiRequest(
+            API_BASE + "/api/reports/" + reportId + "/analyze",
+            {
+              method: "POST",
+            },
+          );
+
+          console.log("AI Analysis Response:", analysis);
+
+          /* -----------------------------------------------------
+       REPORT INFORMATION
+       ----------------------------------------------------- */
+
+          document.getElementById("resultReport").innerText =
+            (report.report_type || report.type || "Medical Report") +
+            " - " +
+            (report.filename || report.fileName || "");
+
+          document.getElementById("analysisDate").innerText =
+            new Date().toLocaleString();
+
+          /* -----------------------------------------------------
+       DISPLAY BACKEND AI RESULT
+       ----------------------------------------------------- */
+
+          displayAnalysisResult(analysis, report);
+
+          result.style.display = "block";
+
+          result.scrollIntoView({
+            behavior: "smooth",
+          });
+        } catch (error) {
+          console.error("AI analysis error:", error);
+
+          alert("AI Analysis failed:\n\n" + error.message);
+        } finally {
+          button.disabled = false;
+
+          button.innerText = oldButtonText;
+        }
+      }
+
+      /* =========================================================
+   DISPLAY AI RESULT
+   ========================================================= */
+
+      function displayAnalysisResult(analysis, report) {
+        /* -------------------------------------------------------
+     RISK
+     ------------------------------------------------------- */
+
+        const riskBox = document.getElementById("riskBox");
+
+        let risk =
+          analysis.risk || analysis.risk_level || analysis.health_risk || "Low";
+
+        risk = String(risk);
+
+        riskBox.className = "risk";
+
+        const lowerRisk = risk.toLowerCase();
+
+        if (lowerRisk.includes("high")) {
+          riskBox.classList.add("high");
+
+          riskBox.innerText =
+            "🔴 High Risk – Prompt medical evaluation is recommended.";
+        } else if (
+          lowerRisk.includes("moderate") ||
+          lowerRisk.includes("medium")
+        ) {
+          riskBox.classList.add("moderate");
+
+          riskBox.innerText =
+            "🟡 Moderate Risk – Further professional medical review is recommended.";
+        } else {
+          riskBox.classList.add("low");
+
+          riskBox.innerText =
+            "🟢 Low Risk – No immediate concern identified from the available report information.";
+        }
+
+        /* -------------------------------------------------------
+     FINDINGS
+     ------------------------------------------------------- */
+
+        const findings = document.getElementById("findings");
+
+        findings.innerHTML = "";
+
+        let findingData =
+          analysis.findings || analysis.key_findings || analysis.finding || [];
+
+        if (!Array.isArray(findingData)) {
+          findingData = [String(findingData)];
+        }
+
+        if (findingData.length === 0) {
+          findingData = [
+            "Medical report uploaded successfully.",
+            "AI analysis completed successfully.",
+          ];
+        }
+
+        findingData.forEach(function (item) {
+          const div = document.createElement("div");
+
+          div.className = "analysis-item";
+
+          div.innerText =
+            "✓ " + (typeof item === "string" ? item : JSON.stringify(item));
+
+          findings.appendChild(div);
+        });
+
+        /* -------------------------------------------------------
+     HEALTH SUMMARY
+     ------------------------------------------------------- */
+
+        const healthSummary = document.getElementById("healthSummary");
+
+        healthSummary.innerHTML = "";
+
+        let summary =
+          analysis.summary ||
+          analysis.health_summary ||
+          analysis.overall_summary ||
+          "AI analysis completed successfully.";
+
+        const summaryDiv = document.createElement("div");
+
+        summaryDiv.className = "analysis-item";
+
+        summaryDiv.innerText = summary;
+
+        healthSummary.appendChild(summaryDiv);
+
+        /* -------------------------------------------------------
+     RECOMMENDATIONS
+     ------------------------------------------------------- */
+
+        const recommendations = document.getElementById("recommendations");
+
+        recommendations.innerHTML = "";
+
+        let recommendationData =
+          analysis.recommendations || analysis.recommendation || [];
+
+        if (!Array.isArray(recommendationData)) {
+          recommendationData = [String(recommendationData)];
+        }
+
+        if (recommendationData.length === 0) {
+          recommendationData = [
+            "Review the report with a qualified healthcare professional.",
+            "Keep your medical reports updated in the digital health card.",
+            "Do not change medicines based only on AI analysis.",
+          ];
+        }
+
+        recommendationData.forEach(function (item) {
+          const div = document.createElement("div");
+
+          div.className = "recommendation";
+
+          div.innerText =
+            "💡 " + (typeof item === "string" ? item : JSON.stringify(item));
+
+          recommendations.appendChild(div);
+        });
+      }
+
+      /* =========================================================
+   DASHBOARD
+   ========================================================= */
+
+      function goDashboard() {
+        window.location.href = "dashboard.html";
+      }
+
+      /* =========================================================
+   LOGOUT
+   ========================================================= */
+
+      function logout() {
+        localStorage.removeItem("access_token");
+
+        localStorage.removeItem("accessToken");
+
+        localStorage.removeItem("token");
+
+        localStorage.removeItem("isLoggedIn");
+
+        window.location.href = "login.html";
+      }
+
+      /* =========================================================
+   START PAGE
+   ========================================================= */
+
+      document.addEventListener("DOMContentLoaded", async function () {
+        console.log("AI Medical Analysis page started");
+
+        console.log("Token available:", !!getAccessToken());
+
+        await loadPatientProfile();
+
+        await loadReports();
+      });
+    </script>
+  </body>
+</html>

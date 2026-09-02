@@ -1,0 +1,733 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+    <title>Patient Profile - AI Universal Health Card</title>
+
+    <style>
+      * {
+        box-sizing: border-box;
+      }
+
+      body {
+        margin: 0;
+        font-family: Arial, sans-serif;
+        background: #f4f7fb;
+        color: #172b4d;
+      }
+
+      /* HEADER */
+
+      .header {
+        height: 60px;
+
+        background: #0d6efd;
+
+        color: white;
+
+        display: flex;
+
+        align-items: center;
+
+        justify-content: space-between;
+
+        padding: 0 8%;
+      }
+
+      .logo {
+        font-size: 21px;
+
+        font-weight: bold;
+      }
+
+      .header-buttons {
+        display: flex;
+
+        gap: 10px;
+      }
+
+      .header-btn {
+        background: white;
+
+        color: #0d6efd;
+
+        border: none;
+
+        padding: 9px 16px;
+
+        border-radius: 5px;
+
+        cursor: pointer;
+      }
+
+      /* CONTAINER */
+
+      .container {
+        width: 90%;
+
+        max-width: 850px;
+
+        margin: 40px auto;
+      }
+
+      /* CARD */
+
+      .card {
+        background: white;
+
+        padding: 35px;
+
+        border-radius: 12px;
+
+        box-shadow: 0 4px 18px rgba(0, 0, 0, 0.08);
+      }
+
+      h1 {
+        margin-top: 0;
+
+        text-align: center;
+
+        color: #172b4d;
+      }
+
+      .subtitle {
+        text-align: center;
+
+        color: #666;
+
+        margin-bottom: 30px;
+      }
+
+      /* FORM */
+
+      .row {
+        display: flex;
+
+        gap: 18px;
+      }
+
+      .form-group {
+        flex: 1;
+
+        margin-bottom: 18px;
+      }
+
+      label {
+        display: block;
+
+        margin-bottom: 7px;
+
+        font-weight: bold;
+
+        color: #333;
+      }
+
+      input,
+      select,
+      textarea {
+        width: 100%;
+
+        padding: 12px;
+
+        border: 1px solid #ccd3dd;
+
+        border-radius: 6px;
+
+        font-size: 15px;
+
+        outline: none;
+      }
+
+      textarea {
+        resize: vertical;
+
+        min-height: 90px;
+      }
+
+      input:focus,
+      select:focus,
+      textarea:focus {
+        border-color: #0d6efd;
+
+        box-shadow: 0 0 0 2px rgba(13, 110, 253, 0.1);
+      }
+
+      /* PATIENT ID */
+
+      .patient-id {
+        background: #eef5ff;
+
+        border: 1px solid #cfe2ff;
+
+        padding: 13px;
+
+        border-radius: 6px;
+
+        margin-bottom: 25px;
+
+        color: #084298;
+      }
+
+      /* BMI */
+
+      .bmi-box {
+        background: #f8f9fa;
+
+        border: 1px solid #ddd;
+
+        padding: 14px;
+
+        border-radius: 6px;
+
+        margin-bottom: 18px;
+      }
+
+      .bmi-value {
+        font-size: 22px;
+
+        font-weight: bold;
+
+        color: #0d6efd;
+      }
+
+      .bmi-status {
+        margin-left: 8px;
+
+        font-weight: bold;
+      }
+
+      /* BUTTONS */
+
+      .buttons {
+        display: flex;
+
+        gap: 12px;
+
+        margin-top: 15px;
+      }
+
+      .save-btn {
+        flex: 1;
+
+        padding: 13px;
+
+        background: #0d6efd;
+
+        color: white;
+
+        border: none;
+
+        border-radius: 6px;
+
+        font-size: 16px;
+
+        font-weight: bold;
+
+        cursor: pointer;
+      }
+
+      .cancel-btn {
+        flex: 1;
+
+        padding: 13px;
+
+        background: #6c757d;
+
+        color: white;
+
+        border: none;
+
+        border-radius: 6px;
+
+        font-size: 16px;
+
+        cursor: pointer;
+      }
+
+      .message {
+        display: none;
+
+        margin-top: 18px;
+
+        padding: 12px;
+
+        border-radius: 6px;
+
+        text-align: center;
+
+        font-weight: bold;
+      }
+
+      /* MOBILE */
+
+      @media (max-width: 650px) {
+        .row {
+          flex-direction: column;
+
+          gap: 0;
+        }
+
+        .card {
+          padding: 25px;
+        }
+
+        .header {
+          padding: 0 5%;
+        }
+
+        .logo {
+          font-size: 17px;
+        }
+      }
+    </style>
+  </head>
+
+  <body>
+    <!-- HEADER -->
+
+    <header class="header">
+      <div class="logo">AI Universal Health Card</div>
+
+      <div class="header-buttons">
+        <button class="header-btn" onclick="goDashboard()">Dashboard</button>
+
+        <button class="header-btn" onclick="logout()">Logout</button>
+      </div>
+    </header>
+
+    <!-- MAIN -->
+
+    <main class="container">
+      <div class="card">
+        <h1>Patient Profile</h1>
+
+        <p class="subtitle">Manage your personal health information</p>
+
+        <!-- PATIENT ID -->
+
+        <div class="patient-id">
+          <strong> Patient ID: </strong>
+
+          <span id="patientId"> Loading... </span>
+        </div>
+
+        <form id="profileForm">
+          <!-- NAME -->
+
+          <div class="form-group">
+            <label> Full Name </label>
+
+            <input
+              type="text"
+              id="name"
+              placeholder="Enter full name"
+              required
+            />
+          </div>
+
+          <!-- DOB + GENDER -->
+
+          <div class="row">
+            <div class="form-group">
+              <label> Date of Birth </label>
+
+              <input type="date" id="dob" required />
+            </div>
+
+            <div class="form-group">
+              <label> Gender </label>
+
+              <select id="gender" required>
+                <option value="">Select Gender</option>
+
+                <option value="Male">Male</option>
+
+                <option value="Female">Female</option>
+
+                <option value="Other">Other</option>
+              </select>
+            </div>
+          </div>
+
+          <!-- BLOOD GROUP -->
+
+          <div class="form-group">
+            <label> Blood Group </label>
+
+            <select id="bloodGroup" required>
+              <option value="">Select Blood Group</option>
+
+              <option value="A+">A+</option>
+
+              <option value="A-">A-</option>
+
+              <option value="B+">B+</option>
+
+              <option value="B-">B-</option>
+
+              <option value="O+">O+</option>
+
+              <option value="O-">O-</option>
+
+              <option value="AB+">AB+</option>
+
+              <option value="AB-">AB-</option>
+            </select>
+          </div>
+
+          <!-- MOBILE + EMAIL -->
+
+          <div class="row">
+            <div class="form-group">
+              <label> Mobile Number </label>
+
+              <input
+                type="tel"
+                id="mobile"
+                maxlength="10"
+                pattern="[0-9]{10}"
+                required
+              />
+            </div>
+
+            <div class="form-group">
+              <label> Email Address </label>
+
+              <input type="email" id="email" required />
+            </div>
+          </div>
+
+          <!-- HEIGHT + WEIGHT -->
+
+          <div class="row">
+            <div class="form-group">
+              <label> Height (cm) </label>
+
+              <input
+                type="number"
+                id="height"
+                min="50"
+                max="250"
+                step="0.1"
+                placeholder="Example: 170"
+              />
+            </div>
+
+            <div class="form-group">
+              <label> Weight (kg) </label>
+
+              <input
+                type="number"
+                id="weight"
+                min="2"
+                max="300"
+                step="0.1"
+                placeholder="Example: 65"
+              />
+            </div>
+          </div>
+
+          <!-- BMI -->
+
+          <div class="bmi-box">
+            <strong> BMI: </strong>
+
+            <span class="bmi-value" id="bmi"> -- </span>
+
+            <span class="bmi-status" id="bmiStatus"> </span>
+          </div>
+
+          <!-- ADDRESS -->
+
+          <div class="form-group">
+            <label> Address </label>
+
+            <textarea id="address" placeholder="Enter your full address">
+            </textarea>
+          </div>
+
+          <!-- EMERGENCY CONTACT -->
+
+          <div class="row">
+            <div class="form-group">
+              <label> Emergency Contact Name </label>
+
+              <input
+                type="text"
+                id="emergencyName"
+                placeholder="Emergency contact person"
+              />
+            </div>
+
+            <div class="form-group">
+              <label> Emergency Contact Number </label>
+
+              <input
+                type="tel"
+                id="emergencyPhone"
+                maxlength="10"
+                pattern="[0-9]{10}"
+                placeholder="10 digit number"
+              />
+            </div>
+          </div>
+
+          <!-- BUTTONS -->
+
+          <div class="buttons">
+            <button type="submit" class="save-btn">Save Profile</button>
+
+            <button type="button" class="cancel-btn" onclick="goDashboard()">
+              Cancel
+            </button>
+          </div>
+
+          <div id="message" class="message"></div>
+        </form>
+      </div>
+    </main>
+
+    <script>
+      /* =========================
+           LOGIN CHECK
+        ========================= */
+
+      const isLoggedIn = localStorage.getItem("isLoggedIn");
+
+      if (isLoggedIn !== "true") {
+        window.location.href = "login.html";
+      }
+
+      /* =========================
+           LOAD PATIENT
+        ========================= */
+
+      let patient = JSON.parse(localStorage.getItem("patientData"));
+
+      if (!patient) {
+        alert("Patient data not found. Please register.");
+
+        window.location.href = "register.html";
+      }
+
+      /* =========================
+           GET ELEMENTS
+        ========================= */
+
+      const patientId = document.getElementById("patientId");
+
+      const name = document.getElementById("name");
+
+      const dob = document.getElementById("dob");
+
+      const gender = document.getElementById("gender");
+
+      const bloodGroup = document.getElementById("bloodGroup");
+
+      const mobile = document.getElementById("mobile");
+
+      const email = document.getElementById("email");
+
+      const height = document.getElementById("height");
+
+      const weight = document.getElementById("weight");
+
+      const bmi = document.getElementById("bmi");
+
+      const bmiStatus = document.getElementById("bmiStatus");
+
+      const address = document.getElementById("address");
+
+      const emergencyName = document.getElementById("emergencyName");
+
+      const emergencyPhone = document.getElementById("emergencyPhone");
+
+      /* =========================
+           LOAD EXISTING DATA
+        ========================= */
+
+      patientId.innerText = patient.patientId || "N/A";
+
+      name.value = patient.name || "";
+
+      dob.value = patient.dob || "";
+
+      gender.value = patient.gender || "";
+
+      bloodGroup.value = patient.bloodGroup || "";
+
+      mobile.value = patient.mobile || "";
+
+      email.value = patient.email || "";
+
+      height.value = patient.height || "";
+
+      weight.value = patient.weight || "";
+
+      address.value = patient.address || "";
+
+      emergencyName.value = patient.emergencyName || "";
+
+      emergencyPhone.value = patient.emergencyPhone || "";
+
+      /* =========================
+           BMI CALCULATION
+        ========================= */
+
+      function calculateBMI() {
+        const h = parseFloat(height.value);
+
+        const w = parseFloat(weight.value);
+
+        if (!h || !w || h <= 0) {
+          bmi.innerText = "--";
+
+          bmiStatus.innerText = "";
+
+          return;
+        }
+
+        const heightMeter = h / 100;
+
+        const bmiValue = w / (heightMeter * heightMeter);
+
+        bmi.innerText = bmiValue.toFixed(1);
+
+        if (bmiValue < 18.5) {
+          bmiStatus.innerText = "Underweight";
+        } else if (bmiValue < 25) {
+          bmiStatus.innerText = "Normal";
+        } else if (bmiValue < 30) {
+          bmiStatus.innerText = "Overweight";
+        } else {
+          bmiStatus.innerText = "Obesity";
+        }
+      }
+
+      height.addEventListener("input", calculateBMI);
+
+      weight.addEventListener("input", calculateBMI);
+
+      calculateBMI();
+
+      /* =========================
+           SAVE PROFILE
+        ========================= */
+
+      document
+        .getElementById("profileForm")
+        .addEventListener("submit", function (event) {
+          event.preventDefault();
+
+          /* MOBILE VALIDATION */
+
+          if (!/^[0-9]{10}$/.test(mobile.value)) {
+            showMessage("Please enter a valid 10 digit mobile number.", false);
+
+            return;
+          }
+
+          /* EMERGENCY NUMBER */
+
+          if (
+            emergencyPhone.value &&
+            !/^[0-9]{10}$/.test(emergencyPhone.value)
+          ) {
+            showMessage(
+              "Please enter a valid emergency contact number.",
+              false,
+            );
+
+            return;
+          }
+
+          /* BMI */
+
+          const h = parseFloat(height.value);
+
+          const w = parseFloat(weight.value);
+
+          let bmiValue = "";
+
+          if (h && w) {
+            bmiValue = (w / Math.pow(h / 100, 2)).toFixed(1);
+          }
+
+          /* UPDATE DATA */
+
+          patient.name = name.value.trim();
+
+          patient.dob = dob.value;
+
+          patient.gender = gender.value;
+
+          patient.bloodGroup = bloodGroup.value;
+
+          patient.mobile = mobile.value.trim();
+
+          patient.email = email.value.trim();
+
+          patient.height = height.value;
+
+          patient.weight = weight.value;
+
+          patient.bmi = bmiValue;
+
+          patient.address = address.value.trim();
+
+          patient.emergencyName = emergencyName.value.trim();
+
+          patient.emergencyPhone = emergencyPhone.value.trim();
+
+          /* SAVE */
+
+          localStorage.setItem("patientData", JSON.stringify(patient));
+
+          showMessage("Profile updated successfully!", true);
+        });
+
+      /* =========================
+           MESSAGE
+        ========================= */
+
+      function showMessage(text, success) {
+        const message = document.getElementById("message");
+
+        message.style.display = "block";
+
+        message.innerText = text;
+
+        if (success) {
+          message.style.background = "#d1e7dd";
+
+          message.style.color = "#0f5132";
+        } else {
+          message.style.background = "#ffe5e5";
+
+          message.style.color = "#b00020";
+        }
+      }
+
+      /* =========================
+           DASHBOARD
+        ========================= */
+
+      function goDashboard() {
+        window.location.href = "dashboard.html";
+      }
+
+      /* =========================
+           LOGOUT
+        ========================= */
+
+      function logout() {
+        localStorage.removeItem("isLoggedIn");
+
+        window.location.href = "index.html";
+      }
+    </script>
+  </body>
+</html>

@@ -1,0 +1,1092 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+    <title>Medical Reports - AI Universal Health Card</title>
+
+    <style>
+      * {
+        box-sizing: border-box;
+      }
+
+      body {
+        margin: 0;
+        font-family: Arial, sans-serif;
+        background: #f3f7fc;
+        color: #172b4d;
+      }
+
+      .header {
+        background: #0d6efd;
+        color: white;
+        padding: 16px 7%;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+      }
+
+      .logo {
+        font-size: 21px;
+        font-weight: bold;
+      }
+
+      button {
+        border: none;
+        padding: 10px 16px;
+        border-radius: 6px;
+        cursor: pointer;
+        font-weight: bold;
+      }
+
+      button:disabled {
+        opacity: 0.6;
+        cursor: not-allowed;
+      }
+
+      .dashboard-btn {
+        background: white;
+        color: #0d6efd;
+      }
+
+      .container {
+        width: 92%;
+        max-width: 1000px;
+        margin: 30px auto;
+      }
+
+      .card {
+        background: white;
+        padding: 28px;
+        border-radius: 15px;
+        box-shadow: 0 5px 20px rgba(0, 0, 0, 0.08);
+        margin-bottom: 25px;
+      }
+
+      h1 {
+        color: #0d6efd;
+        margin-bottom: 5px;
+      }
+
+      h2 {
+        color: #0d6efd;
+      }
+
+      .subtitle {
+        color: #666;
+        margin-bottom: 25px;
+      }
+
+      .patient-id {
+        background: #eaf3ff;
+        border: 1px solid #b8d7ff;
+        padding: 14px;
+        border-radius: 8px;
+        margin-bottom: 25px;
+        font-weight: bold;
+      }
+
+      label {
+        display: block;
+        font-weight: bold;
+        margin-top: 12px;
+      }
+
+      input,
+      select,
+      textarea {
+        width: 100%;
+        padding: 12px;
+        margin-top: 7px;
+        margin-bottom: 15px;
+        border: 1px solid #ccc;
+        border-radius: 6px;
+        font-size: 14px;
+      }
+
+      input[type="file"] {
+        background: #f8fafc;
+      }
+
+      .upload-box {
+        border: 2px dashed #8db9ff;
+        background: #f8fbff;
+        padding: 22px;
+        border-radius: 10px;
+        text-align: center;
+        margin-bottom: 18px;
+      }
+
+      .upload-info {
+        color: #555;
+        font-size: 14px;
+        line-height: 1.7;
+        margin-top: 10px;
+      }
+
+      .upload-btn {
+        width: 100%;
+        background: #0d6efd;
+        color: white;
+        font-size: 15px;
+      }
+
+      .back-btn {
+        background: #6c757d;
+        color: white;
+        margin-top: 10px;
+      }
+
+      .message {
+        display: none;
+        padding: 12px;
+        border-radius: 7px;
+        margin-top: 15px;
+      }
+
+      .success {
+        background: #d1e7dd;
+        color: #0f5132;
+      }
+
+      .error {
+        background: #f8d7da;
+        color: #842029;
+      }
+
+      .loading {
+        background: #fff3cd;
+        color: #664d03;
+      }
+
+      .report-card {
+        background: #f8fafc;
+        border-left: 5px solid #0d6efd;
+        padding: 18px;
+        border-radius: 8px;
+        margin-bottom: 15px;
+      }
+
+      .report-title {
+        font-size: 17px;
+        font-weight: bold;
+        color: #0d6efd;
+        margin-bottom: 10px;
+      }
+
+      .report-info {
+        line-height: 1.8;
+        font-size: 14px;
+      }
+
+      .report-actions {
+        margin-top: 15px;
+        display: flex;
+        flex-wrap: wrap;
+        gap: 8px;
+      }
+
+      .view-btn {
+        background: #198754;
+        color: white;
+      }
+
+      .download-btn {
+        background: #6f42c1;
+        color: white;
+      }
+
+      .analyze-btn {
+        background: #fd7e14;
+        color: white;
+      }
+
+      .delete-btn {
+        background: #dc3545;
+        color: white;
+      }
+
+      .analysis-box {
+        margin-top: 15px;
+        padding: 15px;
+        background: #eef6ff;
+        border-radius: 8px;
+        border: 1px solid #cfe2ff;
+        display: none;
+      }
+
+      .analysis-title {
+        font-size: 16px;
+        font-weight: bold;
+        color: #0d6efd;
+        margin-bottom: 10px;
+      }
+
+      .analysis-row {
+        margin: 8px 0;
+      }
+
+      .insight {
+        background: white;
+        padding: 8px 10px;
+        margin: 6px 0;
+        border-radius: 5px;
+        border-left: 3px solid #0d6efd;
+      }
+
+      .recommendation {
+        background: #fff8e1;
+        padding: 8px 10px;
+        margin: 6px 0;
+        border-radius: 5px;
+      }
+
+      .disclaimer {
+        margin-top: 12px;
+        font-size: 12px;
+        color: #666;
+        font-style: italic;
+      }
+
+      .empty {
+        color: #777;
+        font-style: italic;
+        padding: 15px;
+      }
+
+      .report-count {
+        color: #666;
+        font-size: 14px;
+        margin-bottom: 15px;
+      }
+
+      @media (max-width: 650px) {
+        .container {
+          width: 94%;
+        }
+
+        .card {
+          padding: 20px;
+        }
+
+        .header {
+          padding: 15px 5%;
+        }
+
+        .logo {
+          font-size: 17px;
+        }
+
+        .report-actions button {
+          width: 100%;
+        }
+      }
+    </style>
+  </head>
+
+  <body>
+    <header class="header">
+      <div class="logo">AI Universal Health Card</div>
+
+      <button class="dashboard-btn" onclick="goDashboard()">Dashboard</button>
+    </header>
+
+    <div class="container">
+      <!-- PAGE HEADER -->
+
+      <div class="card">
+        <h1>📄 Medical Reports</h1>
+
+        <p class="subtitle">
+          Upload, view, download and analyze your medical reports
+        </p>
+
+        <div class="patient-id">
+          Patient ID:
+          <span id="patientId">Loading...</span>
+        </div>
+      </div>
+
+      <!-- UPLOAD -->
+
+      <div class="card">
+        <h2>📤 Upload Medical Report</h2>
+
+        <label for="reportType"> Report Type </label>
+
+        <select id="reportType">
+          <option value="">Select Report Type</option>
+          <option value="Blood Test">Blood Test</option>
+          <option value="Urine Test">Urine Test</option>
+          <option value="X-Ray">X-Ray</option>
+          <option value="MRI">MRI</option>
+          <option value="CT Scan">CT Scan</option>
+          <option value="ECG">ECG</option>
+          <option value="Diabetes Report">Diabetes Report</option>
+          <option value="Heart Report">Heart Report</option>
+          <option value="Other">Other</option>
+        </select>
+
+        <label for="reportDate"> Report Date </label>
+
+        <input type="date" id="reportDate" />
+
+        <label> Select Medical Report </label>
+
+        <div class="upload-box">
+          <input type="file" id="reportFile" accept=".pdf,.jpg,.jpeg,.png" />
+
+          <div class="upload-info">
+            <b>Allowed:</b>
+            PDF, JPG, JPEG, PNG
+
+            <br />
+
+            <b>Maximum size:</b>
+            5 MB
+          </div>
+        </div>
+
+        <label for="description"> Report Description </label>
+
+        <textarea
+          id="description"
+          rows="4"
+          placeholder="Enter report description"
+        ></textarea>
+
+        <button class="upload-btn" id="uploadButton" onclick="uploadReport()">
+          📤 Upload Medical Report
+        </button>
+
+        <div id="message" class="message"></div>
+
+        <button class="back-btn" onclick="goDashboard()">← Back</button>
+      </div>
+
+      <!-- REPORT LIST -->
+
+      <div class="card">
+        <h2>📋 My Medical Reports</h2>
+
+        <div id="reportCount" class="report-count">Loading reports...</div>
+
+        <div id="reportsContainer">
+          <div class="empty">Loading medical reports...</div>
+        </div>
+      </div>
+    </div>
+
+    <script>
+      /* =====================================================
+     API CONFIGURATION
+  ===================================================== */
+
+      const API_BASE = window.location.origin;
+
+      /* =====================================================
+     LOGIN CHECK
+  ===================================================== */
+
+      const token =
+        localStorage.getItem("access_token") || localStorage.getItem("token");
+
+      const isLoggedIn = localStorage.getItem("isLoggedIn");
+
+      if (!token && isLoggedIn !== "true") {
+        window.location.href = "login.html";
+      }
+
+      /* =====================================================
+     AUTH HEADERS
+  ===================================================== */
+
+      function getAuthHeaders() {
+        const currentToken =
+          localStorage.getItem("access_token") || localStorage.getItem("token");
+
+        if (!currentToken) {
+          throw new Error("Authentication token not found.");
+        }
+
+        return {
+          Authorization: "Bearer " + currentToken,
+        };
+      }
+
+      /* =====================================================
+     HTML ESCAPE
+  ===================================================== */
+
+      function escapeHTML(value) {
+        if (value === null || value === undefined) {
+          return "";
+        }
+
+        return String(value)
+          .replaceAll("&", "&amp;")
+          .replaceAll("<", "&lt;")
+          .replaceAll(">", "&gt;")
+          .replaceAll('"', "&quot;")
+          .replaceAll("'", "&#039;");
+      }
+
+      /* =====================================================
+     PATIENT PROFILE
+  ===================================================== */
+
+      async function loadPatient() {
+        try {
+          const response = await fetch(API_BASE + "/api/patient/profile", {
+            method: "GET",
+            headers: getAuthHeaders(),
+          });
+
+          if (!response.ok) {
+            throw new Error("Unable to load patient profile.");
+          }
+
+          const data = await response.json();
+
+          const patientId = data?.profile?.card_id || "--";
+
+          document.getElementById("patientId").textContent = patientId;
+        } catch (error) {
+          console.error("Patient profile error:", error);
+
+          document.getElementById("patientId").textContent = "--";
+        }
+      }
+
+      /* =====================================================
+     LOAD REPORTS
+  ===================================================== */
+
+      async function loadReports() {
+        const container = document.getElementById("reportsContainer");
+
+        const count = document.getElementById("reportCount");
+
+        try {
+          const response = await fetch(API_BASE + "/api/reports", {
+            method: "GET",
+            headers: getAuthHeaders(),
+          });
+
+          if (!response.ok) {
+            const errorText = await response.text();
+
+            throw new Error(errorText || "Unable to load reports.");
+          }
+
+          const reports = await response.json();
+
+          count.textContent =
+            reports.length +
+            (reports.length === 1 ? " report found" : " reports found");
+
+          if (!reports.length) {
+            container.innerHTML = `
+          <div class="empty">
+            No medical reports uploaded yet.
+          </div>
+        `;
+
+            return;
+          }
+
+          container.innerHTML = "";
+
+          reports.forEach(function (report) {
+            const card = document.createElement("div");
+
+            card.className = "report-card";
+
+            const reportDate = report.uploaded_at
+              ? new Date(report.uploaded_at).toLocaleString()
+              : "--";
+
+            const sizeMB = report.size_bytes
+              ? (report.size_bytes / (1024 * 1024)).toFixed(2)
+              : "0.00";
+
+            card.innerHTML = `
+
+            <div class="report-title">
+              📄 ${escapeHTML(report.filename || "Medical Report")}
+            </div>
+
+
+            <div class="report-info">
+
+              <strong>Report Type:</strong>
+              ${escapeHTML(report.report_type || "--")}
+
+              <br>
+
+              <strong>File Type:</strong>
+              ${escapeHTML(report.mime_type || "--")}
+
+              <br>
+
+              <strong>File Size:</strong>
+              ${sizeMB} MB
+
+              <br>
+
+              <strong>Uploaded:</strong>
+              ${escapeHTML(reportDate)}
+
+            </div>
+
+
+            <div class="report-actions">
+
+              <button
+                class="view-btn"
+                onclick="viewReport(${report.id})"
+              >
+                👁 View
+              </button>
+
+
+              <button
+                class="download-btn"
+                onclick="downloadReport(${report.id})"
+              >
+                📥 Download
+              </button>
+
+
+              <button
+                class="analyze-btn"
+                onclick="analyzeReport(${report.id})"
+              >
+                🤖 AI Analyze
+              </button>
+
+
+              <button
+                class="delete-btn"
+                onclick="deleteReport(${report.id})"
+              >
+                🗑️ Delete
+              </button>
+
+            </div>
+
+
+            <div
+              id="analysis-${report.id}"
+              class="analysis-box"
+            ></div>
+
+          `;
+
+            container.appendChild(card);
+          });
+        } catch (error) {
+          console.error("Load reports error:", error);
+
+          count.textContent = "Unable to load reports";
+
+          container.innerHTML = `
+
+        <div class="empty">
+
+          Unable to load medical reports.
+
+          <br><br>
+
+          ${escapeHTML(error.message)}
+
+        </div>
+
+      `;
+        }
+      }
+
+      /* =====================================================
+     UPLOAD REPORT
+  ===================================================== */
+
+      async function uploadReport() {
+        const reportType = document.getElementById("reportType").value.trim();
+
+        const reportDate = document.getElementById("reportDate").value;
+
+        const description = document.getElementById("description").value.trim();
+
+        const fileInput = document.getElementById("reportFile");
+
+        const message = document.getElementById("message");
+
+        const button = document.getElementById("uploadButton");
+
+        if (!reportType) {
+          showMessage("Please select a report type.", "error");
+
+          return;
+        }
+
+        if (!fileInput.files.length) {
+          showMessage("Please select a medical report file.", "error");
+
+          return;
+        }
+
+        const file = fileInput.files[0];
+
+        const maxSize = 5 * 1024 * 1024;
+
+        if (file.size > maxSize) {
+          showMessage("File size must not exceed 5 MB.", "error");
+
+          return;
+        }
+
+        const formData = new FormData();
+
+        formData.append("report_type", reportType);
+
+        /*
+      Backend currently accepts:
+      report_type + file
+
+      reportDate and description are
+      kept in frontend for future
+      database-field integration.
+    */
+
+        formData.append("file", file);
+
+        button.disabled = true;
+
+        showMessage("Uploading medical report...", "loading");
+
+        try {
+          const response = await fetch(API_BASE + "/api/reports/upload", {
+            method: "POST",
+
+            headers: getAuthHeaders(),
+
+            body: formData,
+          });
+
+          if (!response.ok) {
+            const errorText = await response.text();
+
+            throw new Error(errorText || "Upload failed.");
+          }
+
+          const result = await response.json();
+
+          showMessage(
+            "Medical report uploaded successfully. Report ID: " + result.id,
+            "success",
+          );
+
+          /*
+        Clear form
+      */
+
+          document.getElementById("reportType").value = "";
+
+          document.getElementById("reportDate").value = "";
+
+          document.getElementById("description").value = "";
+
+          fileInput.value = "";
+
+          /*
+        Refresh list from MySQL
+      */
+
+          await loadReports();
+        } catch (error) {
+          console.error("Upload error:", error);
+
+          showMessage("Upload failed: " + error.message, "error");
+        } finally {
+          button.disabled = false;
+        }
+      }
+
+      /* =====================================================
+     VIEW REPORT
+  ===================================================== */
+
+      async function viewReport(reportId) {
+        try {
+          const response = await fetch(
+            API_BASE + "/api/reports/" + reportId + "/download",
+            {
+              method: "GET",
+              headers: getAuthHeaders(),
+            },
+          );
+
+          if (!response.ok) {
+            throw new Error("Unable to open report.");
+          }
+
+          const blob = await response.blob();
+
+          const url = URL.createObjectURL(blob);
+
+          window.open(url, "_blank");
+
+          setTimeout(function () {
+            URL.revokeObjectURL(url);
+          }, 60000);
+        } catch (error) {
+          alert("Unable to view report: " + error.message);
+        }
+      }
+
+      /* =====================================================
+     DOWNLOAD REPORT
+  ===================================================== */
+
+      async function downloadReport(reportId) {
+        try {
+          const response = await fetch(
+            API_BASE + "/api/reports/" + reportId + "/download",
+            {
+              method: "GET",
+              headers: getAuthHeaders(),
+            },
+          );
+
+          if (!response.ok) {
+            throw new Error("Download failed.");
+          }
+
+          const blob = await response.blob();
+
+          let filename = "medical-report";
+
+          const disposition = response.headers.get("Content-Disposition");
+
+          if (disposition) {
+            const match = disposition.match(/filename="?([^"]+)"?/i);
+
+            if (match) {
+              filename = match[1];
+            }
+          }
+
+          const url = URL.createObjectURL(blob);
+
+          const link = document.createElement("a");
+
+          link.href = url;
+
+          link.download = filename;
+
+          document.body.appendChild(link);
+
+          link.click();
+
+          link.remove();
+
+          URL.revokeObjectURL(url);
+        } catch (error) {
+          alert("Download failed: " + error.message);
+        }
+      }
+
+      /* =====================================================
+     AI ANALYZE
+  ===================================================== */
+
+      async function analyzeReport(reportId) {
+        const box = document.getElementById("analysis-" + reportId);
+
+        box.style.display = "block";
+
+        box.innerHTML = `
+
+      <div class="analysis-title">
+        🤖 AI Analysis
+      </div>
+
+      <div>
+        Analyzing medical report...
+      </div>
+
+    `;
+
+        try {
+          const response = await fetch(
+            API_BASE + "/api/reports/" + reportId + "/analyze",
+            {
+              method: "POST",
+              headers: getAuthHeaders(),
+            },
+          );
+
+          if (!response.ok) {
+            const errorText = await response.text();
+
+            throw new Error(errorText || "AI analysis failed.");
+          }
+
+          const result = await response.json();
+
+          displayAnalysis(reportId, result);
+        } catch (error) {
+          console.error("AI analysis error:", error);
+
+          box.innerHTML = `
+
+        <div class="analysis-title">
+          ⚠️ AI Analysis Error
+        </div>
+
+        <div>
+          ${escapeHTML(error.message)}
+        </div>
+
+      `;
+        }
+      }
+
+      /* =====================================================
+     DISPLAY AI ANALYSIS
+  ===================================================== */
+
+      function displayAnalysis(reportId, result) {
+        const box = document.getElementById("analysis-" + reportId);
+
+        const insights = Array.isArray(result.key_insights)
+          ? result.key_insights
+          : [];
+
+        const recommendations = Array.isArray(result.recommendations)
+          ? result.recommendations
+          : [];
+
+        let html = `
+
+      <div class="analysis-title">
+        🤖 AI Analysis Result
+      </div>
+
+    `;
+
+        if (result.model_name) {
+          html += `
+
+        <div class="analysis-row">
+
+          <strong>Model:</strong>
+
+          ${escapeHTML(result.model_name)}
+
+        </div>
+
+      `;
+        }
+
+        if (result.status) {
+          html += `
+
+        <div class="analysis-row">
+
+          <strong>Status:</strong>
+
+          ${escapeHTML(result.status)}
+
+        </div>
+
+      `;
+        }
+
+        if (result.risk_label) {
+          html += `
+
+        <div class="analysis-row">
+
+          <strong>Risk:</strong>
+
+          ${escapeHTML(result.risk_label)}
+
+        </div>
+
+      `;
+        }
+
+        if (result.risk_score !== null && result.risk_score !== undefined) {
+          html += `
+
+        <div class="analysis-row">
+
+          <strong>Risk Score:</strong>
+
+          ${escapeHTML(result.risk_score)}
+
+        </div>
+
+      `;
+        }
+
+        if (result.summary) {
+          html += `
+
+        <div class="analysis-row">
+
+          <strong>Summary:</strong>
+
+          <br>
+
+          ${escapeHTML(result.summary)}
+
+        </div>
+
+      `;
+        }
+
+        if (insights.length) {
+          html += `
+
+        <div class="analysis-row">
+
+          <strong>
+            Key Insights:
+          </strong>
+
+        </div>
+
+      `;
+
+          insights.forEach(function (item) {
+            html += `
+
+            <div class="insight">
+              ${escapeHTML(item)}
+            </div>
+
+          `;
+          });
+        }
+
+        if (recommendations.length) {
+          html += `
+
+        <div class="analysis-row">
+
+          <strong>
+            Recommendations:
+          </strong>
+
+        </div>
+
+      `;
+
+          recommendations.forEach(function (item) {
+            html += `
+
+            <div class="recommendation">
+              ${escapeHTML(item)}
+            </div>
+
+          `;
+          });
+        }
+
+        if (result.disclaimer) {
+          html += `
+
+        <div class="disclaimer">
+
+          ${escapeHTML(result.disclaimer)}
+
+        </div>
+
+      `;
+        }
+
+        box.innerHTML = html;
+      }
+
+      /* =====================================================
+     DELETE REPORT
+  ===================================================== */
+
+      async function deleteReport(reportId) {
+        const confirmed = confirm(
+          "Are you sure you want to permanently delete this medical report?\n\nThe uploaded file and its AI analysis records will also be deleted.",
+        );
+
+        if (!confirmed) {
+          return;
+        }
+
+        try {
+          const response = await fetch(API_BASE + "/api/reports/" + reportId, {
+            method: "DELETE",
+            headers: getAuthHeaders(),
+          });
+
+          if (!response.ok) {
+            const errorText = await response.text();
+
+            throw new Error(errorText || "Delete failed.");
+          }
+
+          const result = await response.json();
+
+          alert(result.message || "Medical report deleted successfully.");
+
+          /*
+        Refresh reports from MySQL
+      */
+
+          await loadReports();
+        } catch (error) {
+          console.error("Delete error:", error);
+
+          alert("Delete failed: " + error.message);
+        }
+      }
+
+      /* =====================================================
+     MESSAGE
+  ===================================================== */
+
+      function showMessage(text, type) {
+        const message = document.getElementById("message");
+
+        message.textContent = text;
+
+        message.className = "message " + type;
+
+        message.style.display = "block";
+
+        if (type === "success") {
+          setTimeout(function () {
+            message.style.display = "none";
+          }, 5000);
+        }
+      }
+
+      /* =====================================================
+     DASHBOARD
+  ===================================================== */
+
+      function goDashboard() {
+        window.location.href = "dashboard.html";
+      }
+
+      /* =====================================================
+     INITIAL LOAD
+  ===================================================== */
+
+      loadPatient();
+
+      loadReports();
+    </script>
+  </body>
+</html>

@@ -1,0 +1,520 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+    <title>Patient Dashboard - AI Universal Health Card</title>
+
+    <style>
+      * {
+        box-sizing: border-box;
+      }
+
+      body {
+        margin: 0;
+        font-family: Arial, sans-serif;
+        background: #f4f7fb;
+        color: #172b4d;
+      }
+
+      /* HEADER */
+
+      .header {
+        height: 60px;
+        background: #0d6efd;
+        color: white;
+
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+
+        padding: 0 8%;
+      }
+
+      .logo {
+        font-size: 21px;
+        font-weight: bold;
+      }
+
+      .header-buttons {
+        display: flex;
+        gap: 8px;
+      }
+
+      .header-btn {
+        background: white;
+        color: #0d6efd;
+
+        border: none;
+        padding: 9px 16px;
+
+        border-radius: 5px;
+        cursor: pointer;
+
+        font-weight: bold;
+      }
+
+      .header-btn:hover {
+        background: #e9ecef;
+      }
+
+      /* MAIN */
+
+      .container {
+        width: 90%;
+        max-width: 1100px;
+        margin: 40px auto;
+      }
+
+      h1 {
+        margin-bottom: 5px;
+        color: #172b4d;
+      }
+
+      .welcome {
+        color: #666;
+        margin-bottom: 30px;
+        font-size: 16px;
+      }
+
+      /* MODULE CARDS */
+
+      .cards {
+        display: grid;
+
+        grid-template-columns: repeat(3, 1fr);
+
+        gap: 20px;
+      }
+
+      .card {
+        background: white;
+        padding: 25px;
+
+        border-radius: 10px;
+
+        box-shadow: 0 3px 12px rgba(0, 0, 0, 0.07);
+      }
+
+      .module-card {
+        cursor: pointer;
+        transition: 0.2s;
+      }
+
+      .module-card:hover {
+        transform: translateY(-4px);
+
+        box-shadow: 0 7px 20px rgba(0, 0, 0, 0.12);
+      }
+
+      .module-card h3 {
+        color: #0d6efd;
+
+        margin-top: 0;
+
+        font-size: 19px;
+      }
+
+      .module-card p {
+        color: #555;
+
+        line-height: 1.5;
+
+        margin-bottom: 0;
+      }
+
+      /* PATIENT INFORMATION */
+
+      .patient-info {
+        margin-top: 30px;
+      }
+
+      .patient-info h2 {
+        margin-top: 0;
+        color: #172b4d;
+      }
+
+      .info {
+        margin: 13px 0;
+        color: #444;
+        font-size: 15px;
+      }
+
+      .info strong {
+        color: #222;
+      }
+
+      .edit-btn {
+        margin-top: 15px;
+
+        padding: 11px 20px;
+
+        background: #0d6efd;
+        color: white;
+
+        border: none;
+
+        border-radius: 6px;
+
+        cursor: pointer;
+
+        font-weight: bold;
+
+        font-size: 15px;
+      }
+
+      .edit-btn:hover {
+        background: #0b5ed7;
+      }
+
+      /* STATUS */
+
+      .status-box {
+        margin-top: 25px;
+
+        background: #e8f5e9;
+
+        border: 1px solid #c8e6c9;
+
+        padding: 15px;
+
+        border-radius: 8px;
+
+        color: #256029;
+      }
+
+      .status-dot {
+        display: inline-block;
+
+        width: 10px;
+        height: 10px;
+
+        background: green;
+
+        border-radius: 50%;
+
+        margin-right: 7px;
+      }
+
+      /* MOBILE */
+
+      @media (max-width: 800px) {
+        .cards {
+          grid-template-columns: 1fr 1fr;
+        }
+      }
+
+      @media (max-width: 600px) {
+        .cards {
+          grid-template-columns: 1fr;
+        }
+
+        .header {
+          padding: 0 5%;
+        }
+
+        .logo {
+          font-size: 17px;
+        }
+
+        .container {
+          width: 94%;
+        }
+      }
+    </style>
+  </head>
+
+  <body>
+    <!-- HEADER -->
+
+    <header class="header">
+      <div class="logo">AI Universal Health Card</div>
+
+      <div class="header-buttons">
+        <button class="header-btn" onclick="logout()">Logout</button>
+      </div>
+    </header>
+
+    <!-- MAIN -->
+
+    <main class="container">
+      <h1>Patient Dashboard</h1>
+
+      <p class="welcome" id="welcome">Welcome</p>
+
+      <!-- MODULE CARDS -->
+
+      <div class="cards">
+        <!-- MODULE 5 -->
+
+        <div class="card module-card" onclick="openProfile()">
+          <h3>👤 Patient Profile</h3>
+
+          <p>
+            Manage personal information, blood group, BMI, address and emergency
+            contact.
+          </p>
+        </div>
+
+        <!-- MODULE 6 -->
+
+        <div class="card module-card" onclick="openMedicalHistory()">
+          <h3>🏥 Medical History</h3>
+
+          <p>
+            Add and manage diseases, allergies, medicines, surgeries and
+            vaccinations.
+          </p>
+        </div>
+
+        <!-- MODULE 7 -->
+
+        <div class="card module-card" onclick="openMedicalReports()">
+          <h3>📄 Medical Reports</h3>
+
+          <p>Upload blood tests, ECG, X-Ray, CT, MRI and prescriptions.</p>
+        </div>
+
+        <!-- MODULE 8 -->
+
+        <div class="card module-card" onclick="openAIAnalysis()">
+          <h3>🤖 AI Medical Analysis</h3>
+
+          <p>Analyze medical reports and predict disease risk.</p>
+        </div>
+
+        <!-- MODULE 9 -->
+
+        <div class="card module-card" onclick="openQR()">
+          <h3>📱 Emergency QR</h3>
+
+          <p>Generate a unique QR code for emergency health access.</p>
+        </div>
+
+        <!-- DIGITAL HEALTH CARD -->
+
+        <div class="card module-card" onclick="openHealthCard()">
+          <h3>🪪 Digital Health Card</h3>
+
+          <p>View your complete digital health card.</p>
+        </div>
+      </div>
+
+      <!-- PATIENT INFORMATION -->
+
+      <div class="card patient-info">
+        <h2>Patient Information</h2>
+
+        <div class="info">
+          <strong> Patient ID: </strong>
+
+          <span id="patientId"> -- </span>
+        </div>
+
+        <div class="info">
+          <strong> Name: </strong>
+
+          <span id="patientName"> -- </span>
+        </div>
+
+        <div class="info">
+          <strong> Date of Birth: </strong>
+
+          <span id="patientDob"> -- </span>
+        </div>
+
+        <div class="info">
+          <strong> Gender: </strong>
+
+          <span id="patientGender"> -- </span>
+        </div>
+
+        <div class="info">
+          <strong> Blood Group: </strong>
+
+          <span id="patientBlood"> -- </span>
+        </div>
+
+        <div class="info">
+          <strong> Mobile: </strong>
+
+          <span id="patientMobile"> -- </span>
+        </div>
+
+        <div class="info">
+          <strong> Email: </strong>
+
+          <span id="patientEmail"> -- </span>
+        </div>
+
+        <div class="info">
+          <strong> Height: </strong>
+
+          <span id="patientHeight"> -- </span>
+
+          cm
+        </div>
+
+        <div class="info">
+          <strong> Weight: </strong>
+
+          <span id="patientWeight"> -- </span>
+
+          kg
+        </div>
+
+        <div class="info">
+          <strong> BMI: </strong>
+
+          <span id="patientBMI"> -- </span>
+        </div>
+
+        <div class="info">
+          <strong> Address: </strong>
+
+          <span id="patientAddress"> -- </span>
+        </div>
+
+        <!-- EDIT PROFILE -->
+
+        <button class="edit-btn" onclick="openProfile()">
+          ✏️ Edit Profile
+        </button>
+      </div>
+
+      <!-- STATUS -->
+
+      <div class="status-box">
+        <span class="status-dot"></span>
+
+        Account is active and logged in.
+      </div>
+    </main>
+
+    <!-- JAVASCRIPT -->
+
+    <script>
+      /* =========================
+   LOGIN CHECK
+========================= */
+
+      const isLoggedIn = localStorage.getItem("isLoggedIn");
+
+      if (isLoggedIn !== "true") {
+        window.location.href = "login.html";
+      }
+
+      /* =========================
+   PATIENT DATA
+========================= */
+
+      const patient = JSON.parse(localStorage.getItem("patientData"));
+
+      if (!patient) {
+        alert("Patient data not found. Please register again.");
+
+        window.location.href = "register.html";
+      }
+
+      /* =========================
+   DISPLAY PATIENT DATA
+========================= */
+
+      document.getElementById("welcome").innerText =
+        "Welcome, " + (patient.name || "Patient");
+
+      document.getElementById("patientId").innerText =
+        patient.patientId || "--";
+
+      document.getElementById("patientName").innerText = patient.name || "--";
+
+      document.getElementById("patientDob").innerText = patient.dob || "--";
+
+      document.getElementById("patientGender").innerText =
+        patient.gender || "--";
+
+      document.getElementById("patientBlood").innerText =
+        patient.bloodGroup || "--";
+
+      document.getElementById("patientMobile").innerText =
+        patient.mobile || "--";
+
+      document.getElementById("patientEmail").innerText = patient.email || "--";
+
+      document.getElementById("patientHeight").innerText =
+        patient.height || "--";
+
+      document.getElementById("patientWeight").innerText =
+        patient.weight || "--";
+
+      document.getElementById("patientBMI").innerText = patient.bmi || "--";
+
+      document.getElementById("patientAddress").innerText =
+        patient.address || "--";
+
+      /* =========================
+   MODULE 5
+   PROFILE
+========================= */
+
+      function openProfile() {
+        window.location.href = "profile.html";
+      }
+
+      /* =========================
+   MODULE 6
+   MEDICAL HISTORY
+========================= */
+
+      function openMedicalHistory() {
+        window.location.href = "medical-history.html";
+      }
+
+      /* =========================
+   MODULE 7
+   MEDICAL REPORTS
+========================= */
+
+      function openMedicalReports() {
+        window.location.href = "medical-reports.html";
+      }
+
+      /* =========================
+   MODULE 8
+   AI ANALYSIS
+========================= */
+
+      function openAIAnalysis() {
+        window.location.href = "ai-analysis.html";
+      }
+
+      /* =========================
+   MODULE 9
+   EMERGENCY QR
+========================= */
+
+      function openQR() {
+        window.location.href = "emergency-qr.html";
+      }
+
+      /* =========================
+   DIGITAL HEALTH CARD
+========================= */
+
+      function openHealthCard() {
+        window.location.href = "health-card.html";
+      }
+      /* =========================
+   LOGOUT
+========================= */
+
+      function logout() {
+        localStorage.removeItem("isLoggedIn");
+
+        window.location.href = "index.html";
+      }
+    </script>
+  </body>
+</html>

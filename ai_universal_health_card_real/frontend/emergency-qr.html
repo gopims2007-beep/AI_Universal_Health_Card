@@ -1,0 +1,929 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+    <title>Emergency QR - AI Universal Health Card</title>
+
+    <!-- QR Code Library -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+
+    <style>
+      * {
+        box-sizing: border-box;
+      }
+
+      body {
+        margin: 0;
+        font-family: Arial, sans-serif;
+        background: #f4f7fb;
+        color: #1f2937;
+      }
+
+      .container {
+        width: min(1100px, 94%);
+        margin: 30px auto;
+      }
+
+      .card {
+        background: white;
+        border-radius: 16px;
+        padding: 25px;
+        margin-bottom: 20px;
+        box-shadow: 0 5px 20px rgba(0, 0, 0, 0.08);
+      }
+
+      h1 {
+        margin-top: 0;
+        color: #0f766e;
+      }
+
+      h2 {
+        color: #374151;
+        margin-top: 0;
+      }
+
+      button {
+        border: none;
+        border-radius: 8px;
+        padding: 12px 20px;
+        font-size: 16px;
+        cursor: pointer;
+        background: #0f766e;
+        color: white;
+        margin: 5px;
+      }
+
+      button:hover {
+        background: #115e59;
+      }
+
+      button:disabled {
+        opacity: 0.6;
+        cursor: not-allowed;
+      }
+
+      .danger {
+        background: #dc2626;
+      }
+
+      .danger:hover {
+        background: #b91c1c;
+      }
+
+      .secondary {
+        background: #6b7280;
+      }
+
+      .secondary:hover {
+        background: #4b5563;
+      }
+
+      #qrcode {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        margin: 25px auto;
+        min-height: 260px;
+      }
+
+      #qrcode img,
+      #qrcode canvas {
+        margin: auto;
+      }
+
+      .url-box {
+        background: #f3f4f6;
+        border-radius: 8px;
+        padding: 15px;
+        word-break: break-all;
+        margin-top: 15px;
+        font-family: monospace;
+        font-size: 13px;
+      }
+
+      .success {
+        color: #15803d;
+        font-weight: bold;
+      }
+
+      .error {
+        color: #dc2626;
+        font-weight: bold;
+      }
+
+      .loading {
+        color: #2563eb;
+        font-weight: bold;
+      }
+
+      .actions {
+        text-align: center;
+        margin-top: 20px;
+      }
+
+      .info {
+        background: #eff6ff;
+        color: #1d4ed8;
+        padding: 12px;
+        border-radius: 8px;
+        margin-top: 15px;
+        font-size: 14px;
+      }
+
+      /* Forms */
+      input,
+      textarea {
+        width: 100%;
+        padding: 10px;
+        margin: 10px 0;
+        border: 1px solid #d1d5db;
+        border-radius: 8px;
+        font-family: Arial, sans-serif;
+        font-size: 14px;
+      }
+
+      input:focus,
+      textarea:focus {
+        outline: none;
+        border-color: #0f766e;
+        box-shadow: 0 0 0 3px rgba(15, 118, 110, 0.1);
+      }
+
+      label {
+        display: block;
+        font-weight: 700;
+        margin-top: 15px;
+        color: #374151;
+      }
+
+      .form-group {
+        margin-bottom: 15px;
+      }
+
+      /* Document List */
+      .document-item {
+        background: #f9fafb;
+        border: 1px solid #e5e7eb;
+        border-radius: 12px;
+        padding: 15px;
+        margin-bottom: 12px;
+        display: flex;
+        align-items: center;
+        gap: 15px;
+      }
+
+      .document-icon {
+        font-size: 32px;
+      }
+
+      .document-details {
+        flex: 1;
+      }
+
+      .document-category {
+        font-size: 12px;
+        color: #2563eb;
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+      }
+
+      .document-name {
+        font-weight: 700;
+        font-size: 16px;
+        color: #111827;
+        margin-top: 3px;
+      }
+
+      .document-desc {
+        font-size: 13px;
+        color: #64748b;
+        margin-top: 3px;
+      }
+
+      .document-actions {
+        display: flex;
+        gap: 8px;
+      }
+
+      .document-actions button {
+        margin: 0;
+        padding: 8px 12px;
+        font-size: 13px;
+      }
+
+      .btn-edit {
+        background: #2563eb;
+      }
+
+      .btn-edit:hover {
+        background: #1d4ed8;
+      }
+
+      .btn-delete {
+        background: #dc2626;
+      }
+
+      .btn-delete:hover {
+        background: #b91c1c;
+      }
+
+      .empty-docs {
+        text-align: center;
+        color: #9ca3af;
+        padding: 30px 20px;
+      }
+
+      .empty-docs-icon {
+        font-size: 40px;
+        margin-bottom: 10px;
+      }
+
+      /* Modal */
+      .modal {
+        display: none;
+        position: fixed;
+        z-index: 1000;
+        left: 0;
+        top: 0;
+        width: 100%;
+        height: 100%;
+        background-color: rgba(0, 0, 0, 0.5);
+      }
+
+      .modal.show {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+      }
+
+      .modal-content {
+        background-color: white;
+        padding: 30px;
+        border-radius: 16px;
+        width: min(500px, 95%);
+        max-height: 90vh;
+        overflow-y: auto;
+        box-shadow: 0 20px 25px rgba(0, 0, 0, 0.15);
+      }
+
+      .modal-close {
+        float: right;
+        font-size: 28px;
+        font-weight: bold;
+        color: #9ca3af;
+        cursor: pointer;
+        border: none;
+        background: none;
+        padding: 0;
+        margin: 0;
+      }
+
+      .modal-close:hover {
+        color: #111827;
+      }
+
+      @media (max-width: 600px) {
+        .container {
+          width: 96%;
+          margin: 15px auto;
+        }
+
+        .card {
+          padding: 18px;
+        }
+
+        button {
+          width: 100%;
+          margin: 5px 0;
+        }
+
+        #qrcode {
+          min-height: 220px;
+          overflow-x: auto;
+        }
+
+        .document-item {
+          flex-direction: column;
+          align-items: flex-start;
+        }
+
+        .document-actions {
+          width: 100%;
+        }
+
+        .document-actions button {
+          flex: 1;
+        }
+      }
+    </style>
+  </head>
+
+  <body>
+    <div class="container">
+      <!-- HEADER -->
+      <div class="card">
+        <h1>🚨 Emergency QR Code</h1>
+
+        <p>
+          Generate a public Emergency Health Card QR code that can be scanned
+          without login.
+        </p>
+
+        <button onclick="generateQR()">Generate QR Code</button>
+
+        <button class="danger" onclick="revokeQR()">Revoke QR</button>
+      </div>
+
+      <!-- QR CARD -->
+      <div class="card">
+        <h2>QR Code</h2>
+
+        <div id="status"></div>
+
+        <div id="qrcode"></div>
+
+        <p>
+          <strong>Emergency URL:</strong>
+        </p>
+
+        <div id="emergencyUrl" class="url-box">QR code not generated yet.</div>
+
+        <div class="actions">
+          <button id="downloadQR" disabled>📥 Download QR</button>
+
+          <button id="openEmergencyPage" disabled>
+            👁 Open Emergency Page
+          </button>
+        </div>
+
+        <div class="info">
+          ℹ️ This QR code is public and can be shared via WhatsApp or scanned
+          with Google Lens. When scanned, it will display your emergency
+          information and linked documents.
+        </div>
+      </div>
+
+      <!-- EMERGENCY DOCUMENTS CARD -->
+      <div class="card">
+        <h2>📋 Emergency Documents</h2>
+
+        <p>
+          Add Google Drive PDF links that will appear when someone scans your QR
+          code.
+        </p>
+
+        <button onclick="openDocumentModal()">➕ Add Document</button>
+
+        <div id="documentsList"></div>
+      </div>
+    </div>
+
+    <!-- DOCUMENT MODAL -->
+    <div id="documentModal" class="modal">
+      <div class="modal-content">
+        <button class="modal-close" onclick="closeDocumentModal()">
+          &times;
+        </button>
+
+        <h2 id="modalTitle">Add Emergency Document</h2>
+
+        <div class="form-group">
+          <label>File Name *</label>
+          <input
+            type="text"
+            id="docFileName"
+            placeholder="e.g., Blood_Test_Report.pdf"
+            required
+          />
+        </div>
+
+        <div class="form-group">
+          <label>Google Drive URL *</label>
+          <input
+            type="url"
+            id="docUrl"
+            placeholder="https://drive.google.com/file/d/..."
+            required
+          />
+        </div>
+
+        <div class="form-group">
+          <label>Category (optional)</label>
+          <input
+            type="text"
+            id="docCategory"
+            placeholder="e.g., Blood Test, X-Ray, Report"
+          />
+        </div>
+
+        <div class="form-group">
+          <label>Description (optional)</label>
+          <textarea
+            id="docDescription"
+            placeholder="Add any notes about this document"
+            rows="3"
+          ></textarea>
+        </div>
+
+        <div class="actions">
+          <button id="saveDocBtn" onclick="saveDocument()">
+            Save Document
+          </button>
+          <button class="secondary" onclick="closeDocumentModal()">
+            Cancel
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <script>
+      // =========================================================
+      // API CONFIGURATION
+      // =========================================================
+
+      const API_BASE_URL = window.location.origin;
+
+      const API_QR = `${API_BASE_URL}/api/qr`;
+      const API_DOCS = `${API_BASE_URL}/api/emergency-docs`;
+
+      let currentDocumentId = null;
+      let currentToken = null;
+
+      // =========================================================
+      // GET AUTHORIZATION TOKEN
+      // =========================================================
+
+      function getAuthToken() {
+        // Try localStorage first (most common)
+        let token = localStorage.getItem("access_token");
+        if (token) return token;
+
+        // Try sessionStorage
+        token = sessionStorage.getItem("access_token");
+        if (token) return token;
+
+        // Try localStorage with different key patterns
+        for (let key in localStorage) {
+          if (key.includes("token") || key.includes("jwt")) {
+            token = localStorage.getItem(key);
+            if (token && token.length > 20) return token;
+          }
+        }
+
+        return null;
+      }
+
+      // =========================================================
+      // BUILD FETCH OPTIONS WITH AUTH
+      // =========================================================
+
+      function buildFetchOptions(method = "GET", body = null) {
+        const token = getAuthToken();
+
+        if (!token) {
+          alert("⚠️ Not logged in. Please log in first.");
+          window.location.href = "/login.html";
+          return null;
+        }
+
+        const options = {
+          method: method,
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
+          },
+          credentials: "include",
+        };
+
+        if (body) {
+          options.body = JSON.stringify(body);
+        }
+
+        return options;
+      }
+
+      // =========================================================
+      // LOAD PAGE
+      // =========================================================
+
+      window.addEventListener("DOMContentLoaded", function () {
+        loadQRStatus();
+        loadDocuments();
+      });
+
+      // =========================================================
+      // LOAD QR STATUS
+      // =========================================================
+
+      async function loadQRStatus() {
+        try {
+          const options = buildFetchOptions("POST");
+          if (!options) return;
+
+          const response = await fetch(`${API_QR}/generate`, options);
+
+          if (response.status === 401) {
+            showStatus("❌ Session expired. Please log in again.", "error");
+            setTimeout(() => (window.location.href = "/login.html"), 1000);
+            return;
+          }
+
+          if (!response.ok) {
+            showStatus("❌ Failed to load QR status.", "error");
+            return;
+          }
+
+          const data = await response.json();
+          currentToken = data.token;
+          updateEmergencyQR(data.token);
+        } catch (error) {
+          console.error(error);
+          showStatus("❌ Error loading QR status.", "error");
+        }
+      }
+
+      // =========================================================
+      // UPDATE QR CODE
+      // =========================================================
+
+      function updateEmergencyQR(token, emergencyUrl) {
+        if (!token) {
+          showStatus("Emergency QR token is missing.", "error");
+          return;
+        }
+
+        currentToken = token;
+        currentToken = token;
+
+        // Show URL
+
+        // Show URL
+        const urlBox = document.getElementById("emergencyUrl");
+        urlBox.textContent = emergencyUrl;
+
+        // Clear old QR
+        const qrContainer = document.getElementById("qrcode");
+        qrContainer.innerHTML = "";
+
+        // Create new QR
+        new QRCode(qrContainer, {
+          text: emergencyUrl,
+          width: 300,
+          height: 300,
+          correctLevel: QRCode.CorrectLevel.H,
+        });
+
+        // Enable open button
+        const openButton = document.getElementById("openEmergencyPage");
+        openButton.disabled = false;
+        openButton.onclick = function () {
+          window.open(emergencyUrl, "_blank");
+        };
+
+        // Enable download button
+        const downloadButton = document.getElementById("downloadQR");
+        downloadButton.disabled = false;
+        downloadButton.onclick = function () {
+          downloadQRImage();
+        };
+
+        showStatus("✅ Emergency QR Code is ready.", "success");
+      }
+
+      // =========================================================
+      // DOWNLOAD QR IMAGE
+      // =========================================================
+
+      function downloadQRImage() {
+        const canvas = document.querySelector("#qrcode canvas");
+        const image = document.querySelector("#qrcode img");
+
+        if (canvas) {
+          const link = document.createElement("a");
+          link.download = "Emergency-Health-Card-QR.png";
+          link.href = canvas.toDataURL("image/png");
+          link.click();
+          showStatus("✅ QR Code downloaded successfully.", "success");
+        } else if (image) {
+          const link = document.createElement("a");
+          link.download = "Emergency-Health-Card-QR.png";
+          link.href = image.src;
+          link.click();
+          showStatus("✅ QR Code downloaded successfully.", "success");
+        } else {
+          showStatus("❌ QR image is not ready yet.", "error");
+        }
+      }
+
+      // =========================================================
+      // GENERATE QR
+      // =========================================================
+
+      async function generateQR() {
+        showStatus("🔄 Generating Emergency QR Code...", "loading");
+
+        try {
+          const options = buildFetchOptions("POST");
+          if (!options) return;
+
+          const response = await fetch(`${API_QR}/generate`, options);
+
+          if (!response.ok) {
+            showStatus("❌ Failed to generate QR Code.", "error");
+            return;
+          }
+
+          const data = await response.json();
+          currentToken = data.token;
+          updateEmergencyQR(data.token, data.emergency_url);
+        } catch (error) {
+          console.error(error);
+          showStatus("❌ Error generating QR Code.", "error");
+        }
+      }
+
+      // =========================================================
+      // REVOKE QR
+      // =========================================================
+
+      async function revokeQR() {
+        if (
+          !confirm(
+            "Are you sure you want to revoke the QR code? It will no longer work.",
+          )
+        ) {
+          return;
+        }
+
+        showStatus("🔄 Revoking QR Code...", "loading");
+
+        try {
+          const options = buildFetchOptions("POST");
+          if (!options) return;
+
+          const response = await fetch(`${API_QR}/revoke`, options);
+
+          if (!response.ok) {
+            showStatus("❌ Failed to revoke QR Code.", "error");
+            return;
+          }
+
+          const qrContainer = document.getElementById("qrcode");
+          const urlBox = document.getElementById("emergencyUrl");
+          const downloadButton = document.getElementById("downloadQR");
+          const openButton = document.getElementById("openEmergencyPage");
+
+          qrContainer.innerHTML = "";
+          urlBox.textContent = "QR code revoked.";
+          downloadButton.disabled = true;
+          openButton.disabled = true;
+          currentToken = null;
+
+          showStatus("✅ Emergency QR Code revoked successfully.", "success");
+        } catch (error) {
+          console.error(error);
+          showStatus("❌ Error revoking QR Code.", "error");
+        }
+      }
+
+      // =========================================================
+      // STATUS MESSAGE
+      // =========================================================
+
+      function showStatus(message, type) {
+        const status = document.getElementById("status");
+        status.className = type;
+        status.textContent = message;
+      }
+
+      // =========================================================
+      // LOAD DOCUMENTS
+      // =========================================================
+
+      async function loadDocuments() {
+        try {
+          const options = buildFetchOptions("GET");
+          if (!options) return;
+
+          const response = await fetch(API_DOCS, options);
+
+          if (!response.ok) {
+            console.error("Failed to load documents");
+            return;
+          }
+
+          const documents = await response.json();
+          renderDocuments(documents);
+        } catch (error) {
+          console.error(error);
+        }
+      }
+
+      // =========================================================
+      // RENDER DOCUMENTS
+      // =========================================================
+
+      function renderDocuments(documents) {
+        const container = document.getElementById("documentsList");
+
+        if (documents.length === 0) {
+          container.innerHTML = `
+            <div class="empty-docs">
+              <div class="empty-docs-icon">📋</div>
+              <p>No documents added yet. Add your first Google Drive PDF link above.</p>
+            </div>
+          `;
+          return;
+        }
+
+        let html = "";
+
+        documents.forEach((doc) => {
+          html += `
+            <div class="document-item">
+              <div class="document-icon">📄</div>
+              <div class="document-details">
+                <div class="document-category">${escapeHtml(doc.document_category || "Document")}</div>
+                <div class="document-name">${escapeHtml(doc.file_name)}</div>
+                ${doc.description ? `<div class="document-desc">${escapeHtml(doc.description)}</div>` : ""}
+              </div>
+              <div class="document-actions">
+                <button class="btn-edit" onclick="editDocument(${doc.id})">Edit</button>
+                <button class="btn-delete" onclick="deleteDocument(${doc.id})">Delete</button>
+              </div>
+            </div>
+          `;
+        });
+
+        container.innerHTML = html;
+      }
+
+      // =========================================================
+      // ESCAPE HTML
+      // =========================================================
+
+      function escapeHtml(text) {
+        const div = document.createElement("div");
+        div.textContent = text;
+        return div.innerHTML;
+      }
+
+      // =========================================================
+      // OPEN DOCUMENT MODAL
+      // =========================================================
+
+      function openDocumentModal() {
+        currentDocumentId = null;
+        document.getElementById("modalTitle").textContent =
+          "Add Emergency Document";
+        document.getElementById("docFileName").value = "";
+        document.getElementById("docUrl").value = "";
+        document.getElementById("docCategory").value = "";
+        document.getElementById("docDescription").value = "";
+        document.getElementById("documentModal").classList.add("show");
+      }
+
+      // =========================================================
+      // CLOSE DOCUMENT MODAL
+      // =========================================================
+
+      function closeDocumentModal() {
+        document.getElementById("documentModal").classList.remove("show");
+      }
+
+      // =========================================================
+      // EDIT DOCUMENT
+      // =========================================================
+
+      async function editDocument(docId) {
+        try {
+          const options = buildFetchOptions("GET");
+          if (!options) return;
+
+          const response = await fetch(`${API_DOCS}/${docId}`, options);
+
+          if (!response.ok) {
+            alert("Failed to load document");
+            return;
+          }
+
+          const doc = await response.json();
+          currentDocumentId = docId;
+          document.getElementById("modalTitle").textContent =
+            "Edit Emergency Document";
+          document.getElementById("docFileName").value = doc.file_name;
+          document.getElementById("docUrl").value = doc.google_drive_url;
+          document.getElementById("docCategory").value =
+            doc.document_category || "";
+          document.getElementById("docDescription").value =
+            doc.description || "";
+          document.getElementById("documentModal").classList.add("show");
+        } catch (error) {
+          console.error(error);
+          alert("Error loading document");
+        }
+      }
+
+      // =========================================================
+      // SAVE DOCUMENT
+      // =========================================================
+
+      async function saveDocument() {
+        const fileName = document.getElementById("docFileName").value.trim();
+        const url = document.getElementById("docUrl").value.trim();
+        const category = document.getElementById("docCategory").value.trim();
+        const description = document
+          .getElementById("docDescription")
+          .value.trim();
+
+        if (!fileName) {
+          alert("File name is required");
+          return;
+        }
+
+        if (!url) {
+          alert("Google Drive URL is required");
+          return;
+        }
+
+        if (
+          !url.includes("drive.google.com") &&
+          !url.includes("docs.google.com")
+        ) {
+          alert("Please provide a valid Google Drive URL");
+          return;
+        }
+
+        const data = {
+          file_name: fileName,
+          google_drive_url: url,
+          document_category: category || null,
+          description: description || null,
+        };
+
+        try {
+          const method = currentDocumentId ? "PUT" : "POST";
+          const endpoint = currentDocumentId
+            ? `${API_DOCS}/${currentDocumentId}`
+            : API_DOCS;
+
+          const options = buildFetchOptions(method, data);
+          if (!options) return;
+
+          const response = await fetch(endpoint, options);
+
+          if (!response.ok) {
+            alert("Failed to save document");
+            return;
+          }
+
+          closeDocumentModal();
+          loadDocuments();
+          alert(currentDocumentId ? "Document updated!" : "Document added!");
+        } catch (error) {
+          console.error(error);
+          alert("Error saving document");
+        }
+      }
+
+      // =========================================================
+      // DELETE DOCUMENT
+      // =========================================================
+
+      async function deleteDocument(docId) {
+        if (!confirm("Are you sure you want to delete this document?")) {
+          return;
+        }
+
+        try {
+          const options = buildFetchOptions("DELETE");
+          if (!options) return;
+
+          const response = await fetch(`${API_DOCS}/${docId}`, options);
+
+          if (!response.ok) {
+            alert("Failed to delete document");
+            return;
+          }
+
+          loadDocuments();
+          alert("Document deleted!");
+        } catch (error) {
+          console.error(error);
+          alert("Error deleting document");
+        }
+      }
+
+      // Close modal when clicking outside
+      window.onclick = function (event) {
+        const modal = document.getElementById("documentModal");
+        if (event.target === modal) {
+          closeDocumentModal();
+        }
+      };
+    </script>
+  </body>
+</html>

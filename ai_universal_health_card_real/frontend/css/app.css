@@ -1,0 +1,6 @@
+body { background: #f5f7fb; }
+.page { min-height: 60vh; }
+.feature { background: white; border-radius: 16px; padding: 24px; box-shadow: 0 4px 18px rgba(0,0,0,.06); height: 100%; }
+.card { border: 0; border-radius: 16px; }
+.qr { max-width: 280px; border: 8px solid white; box-shadow: 0 3px 16px rgba(0,0,0,.12); }
+.report-row { border-bottom: 1px solid #eee; padding: 10px 0; }

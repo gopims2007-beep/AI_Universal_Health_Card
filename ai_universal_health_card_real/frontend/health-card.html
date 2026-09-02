@@ -1,0 +1,444 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+    <title>Digital Health Card</title>
+
+    <style>
+      * {
+        box-sizing: border-box;
+      }
+
+      body {
+        margin: 0;
+        font-family: Arial, sans-serif;
+        background: #f3f7fc;
+        color: #172b4d;
+      }
+
+      .header {
+        background: #0d6efd;
+        color: white;
+        padding: 16px 8%;
+
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+      }
+
+      .logo {
+        font-size: 21px;
+        font-weight: bold;
+      }
+
+      .btn {
+        border: none;
+        padding: 10px 18px;
+        border-radius: 6px;
+        cursor: pointer;
+        font-weight: bold;
+      }
+
+      .dashboard-btn {
+        background: white;
+        color: #0d6efd;
+      }
+
+      .container {
+        width: 90%;
+        max-width: 1000px;
+        margin: 35px auto;
+      }
+
+      .health-card {
+        background: white;
+        border-radius: 15px;
+        padding: 30px;
+
+        box-shadow: 0 5px 20px rgba(0, 0, 0, 0.1);
+      }
+
+      .title {
+        text-align: center;
+        color: #0d6efd;
+        margin-bottom: 5px;
+      }
+
+      .subtitle {
+        text-align: center;
+        color: #666;
+        margin-bottom: 30px;
+      }
+
+      .patient-id {
+        background: #eaf3ff;
+        border: 1px solid #b8d7ff;
+        padding: 14px;
+        border-radius: 8px;
+        margin-bottom: 25px;
+        text-align: center;
+        font-weight: bold;
+      }
+
+      .section {
+        margin-top: 25px;
+      }
+
+      .section h2 {
+        font-size: 20px;
+        color: #0d6efd;
+
+        border-bottom: 2px solid #e5e5e5;
+        padding-bottom: 8px;
+      }
+
+      .grid {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 15px;
+      }
+
+      .field {
+        background: #f8fafc;
+        padding: 14px;
+        border-radius: 7px;
+      }
+
+      .field strong {
+        display: block;
+        margin-bottom: 5px;
+        color: #333;
+      }
+
+      .field span {
+        color: #555;
+      }
+
+      .blood {
+        color: #d63384 !important;
+        font-weight: bold;
+        font-size: 18px;
+      }
+
+      .emergency {
+        background: #fff3cd;
+        border: 1px solid #ffe69c;
+
+        padding: 18px;
+        border-radius: 8px;
+      }
+
+      .empty {
+        color: #777;
+        font-style: italic;
+      }
+
+      .actions {
+        display: flex;
+        justify-content: center;
+        gap: 12px;
+        margin-top: 30px;
+      }
+
+      .print-btn {
+        background: #198754;
+        color: white;
+      }
+
+      .back-btn {
+        background: #6c757d;
+        color: white;
+      }
+
+      @media (max-width: 650px) {
+        .grid {
+          grid-template-columns: 1fr;
+        }
+
+        .header {
+          padding: 15px 5%;
+        }
+
+        .container {
+          width: 94%;
+        }
+
+        .health-card {
+          padding: 20px;
+        }
+      }
+
+      @media print {
+        .header,
+        .actions {
+          display: none;
+        }
+
+        body {
+          background: white;
+        }
+
+        .container {
+          width: 100%;
+          margin: 0;
+        }
+
+        .health-card {
+          box-shadow: none;
+        }
+      }
+    </style>
+  </head>
+
+  <body>
+    <header class="header">
+      <div class="logo">AI Universal Health Card</div>
+
+      <button class="btn dashboard-btn" onclick="goDashboard()">
+        Dashboard
+      </button>
+    </header>
+
+    <div class="container">
+      <div class="health-card">
+        <h1 class="title">🪪 Digital Health Card</h1>
+
+        <p class="subtitle">AI Universal Health Card</p>
+
+        <div class="patient-id">
+          Patient ID:
+          <span id="patientId">Loading...</span>
+        </div>
+
+        <!-- PERSONAL INFORMATION -->
+
+        <div class="section">
+          <h2>👤 Personal Information</h2>
+
+          <div class="grid">
+            <div class="field">
+              <strong>Name</strong>
+
+              <span id="name"> -- </span>
+            </div>
+
+            <div class="field">
+              <strong>Date of Birth</strong>
+
+              <span id="dob"> -- </span>
+            </div>
+
+            <div class="field">
+              <strong>Gender</strong>
+
+              <span id="gender"> -- </span>
+            </div>
+
+            <div class="field">
+              <strong>Blood Group</strong>
+
+              <span id="bloodGroup" class="blood"> -- </span>
+            </div>
+
+            <div class="field">
+              <strong>Mobile</strong>
+
+              <span id="mobile"> -- </span>
+            </div>
+
+            <div class="field">
+              <strong>Email</strong>
+
+              <span id="email"> -- </span>
+            </div>
+          </div>
+        </div>
+
+        <!-- PHYSICAL INFORMATION -->
+
+        <div class="section">
+          <h2>⚕️ Physical Information</h2>
+
+          <div class="grid">
+            <div class="field">
+              <strong>Height</strong>
+
+              <span id="height"> -- </span>
+
+              cm
+            </div>
+
+            <div class="field">
+              <strong>Weight</strong>
+
+              <span id="weight"> -- </span>
+
+              kg
+            </div>
+
+            <div class="field">
+              <strong>BMI</strong>
+
+              <span id="bmi"> -- </span>
+            </div>
+
+            <div class="field">
+              <strong>Address</strong>
+
+              <span id="address"> -- </span>
+            </div>
+          </div>
+        </div>
+
+        <!-- MEDICAL HISTORY -->
+
+        <div class="section">
+          <h2>🏥 Medical History</h2>
+
+          <div id="medicalHistory" class="field">
+            <span class="empty"> No medical history added yet. </span>
+          </div>
+        </div>
+
+        <!-- ALLERGY -->
+
+        <div class="section">
+          <h2>⚠️ Allergies</h2>
+
+          <div id="allergy" class="field">
+            <span class="empty"> No allergy information available. </span>
+          </div>
+        </div>
+
+        <!-- MEDICINES -->
+
+        <div class="section">
+          <h2>💊 Current Medicines</h2>
+
+          <div id="medicines" class="field">
+            <span class="empty"> No current medicines added. </span>
+          </div>
+        </div>
+
+        <!-- EMERGENCY -->
+
+        <div class="section">
+          <h2>🚨 Emergency Information</h2>
+
+          <div class="emergency">
+            <strong> Emergency Contact: </strong>
+
+            <span id="emergencyContact"> Not provided </span>
+
+            <br /><br />
+
+            <strong> Emergency Phone: </strong>
+
+            <span id="emergencyPhone"> Not provided </span>
+          </div>
+        </div>
+
+        <!-- ACTIONS -->
+
+        <div class="actions">
+          <button class="btn print-btn" onclick="printCard()">
+            🖨️ Print Health Card
+          </button>
+
+          <button class="btn back-btn" onclick="goDashboard()">
+            ← Back to Dashboard
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <script>
+      /* =========================
+   LOGIN CHECK
+========================= */
+
+      const isLoggedIn = localStorage.getItem("isLoggedIn");
+
+      if (isLoggedIn !== "true") {
+        window.location.href = "login.html";
+      }
+
+      /* =========================
+   GET PATIENT DATA
+========================= */
+
+      const patient = JSON.parse(localStorage.getItem("patientData"));
+
+      if (!patient) {
+        alert("Patient data not found.");
+
+        window.location.href = "dashboard.html";
+      }
+
+      /* =========================
+   DISPLAY DATA
+========================= */
+
+      document.getElementById("patientId").innerText =
+        patient.patientId || "--";
+
+      document.getElementById("name").innerText = patient.name || "--";
+
+      document.getElementById("dob").innerText = patient.dob || "--";
+
+      document.getElementById("gender").innerText = patient.gender || "--";
+
+      document.getElementById("bloodGroup").innerText =
+        patient.bloodGroup || "--";
+
+      document.getElementById("mobile").innerText = patient.mobile || "--";
+
+      document.getElementById("email").innerText = patient.email || "--";
+
+      document.getElementById("height").innerText = patient.height || "--";
+
+      document.getElementById("weight").innerText = patient.weight || "--";
+
+      document.getElementById("bmi").innerText = patient.bmi || "--";
+
+      document.getElementById("address").innerText = patient.address || "--";
+
+      /* =========================
+   MEDICAL INFORMATION
+========================= */
+
+      document.getElementById("medicalHistory").innerText =
+        patient.medicalHistory || "No medical history added yet.";
+
+      document.getElementById("allergy").innerText =
+        patient.allergy || "No allergy information available.";
+
+      document.getElementById("medicines").innerText =
+        patient.currentMedicines || "No current medicines added.";
+
+      document.getElementById("emergencyContact").innerText =
+        patient.emergencyContact || "Not provided";
+
+      document.getElementById("emergencyPhone").innerText =
+        patient.emergencyPhone || "Not provided";
+
+      /* =========================
+   DASHBOARD
+========================= */
+
+      function goDashboard() {
+        window.location.href = "dashboard.html";
+      }
+
+      /* =========================
+   PRINT
+========================= */
+
+      function printCard() {
+        window.print();
+      }
+    </script>
+  </body>
+</html>
