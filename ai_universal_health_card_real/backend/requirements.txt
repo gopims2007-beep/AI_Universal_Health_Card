@@ -13,7 +13,7 @@ qrcode[pil]==8.2
 Pillow==11.3.0
 pypdf==6.0.0
 reportlab==4.4.3
-scikit-learn==1.7.1
+scikit-learn==1.7.2
 pandas==2.3.2
 numpy==2.3.2
 joblib==1.5.1
