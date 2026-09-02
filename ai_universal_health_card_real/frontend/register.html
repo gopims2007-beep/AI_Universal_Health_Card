@@ -14,77 +14,55 @@
 
       body {
         margin: 0;
-
         font-family: Arial, sans-serif;
-
         background: #f4f7fb;
       }
 
       .header {
         height: 60px;
-
         background: #0d6efd;
-
         color: white;
-
         display: flex;
-
         align-items: center;
-
         justify-content: space-between;
-
         padding: 0 8%;
       }
 
       .logo {
         font-size: 21px;
-
         font-weight: bold;
       }
 
       .home-btn {
         background: white;
-
         color: #0d6efd;
-
         border: none;
-
         padding: 9px 16px;
-
         border-radius: 5px;
-
         cursor: pointer;
       }
 
       .container {
         width: 90%;
-
         max-width: 650px;
-
         margin: 45px auto;
       }
 
       .card {
         background: white;
-
         padding: 35px;
-
         border-radius: 12px;
-
         box-shadow: 0 4px 18px rgba(0, 0, 0, 0.08);
       }
 
       h1 {
         text-align: center;
-
         color: #172b4d;
       }
 
       .subtitle {
         text-align: center;
-
         color: #666;
-
         margin-bottom: 30px;
       }
 
@@ -94,26 +72,18 @@
 
       label {
         display: block;
-
         margin-bottom: 7px;
-
         font-weight: bold;
-
         color: #333;
       }
 
       input,
       select {
         width: 100%;
-
         padding: 12px;
-
         border: 1px solid #ccd3dd;
-
         border-radius: 6px;
-
         font-size: 15px;
-
         outline: none;
       }
 
@@ -124,7 +94,6 @@
 
       .row {
         display: flex;
-
         gap: 15px;
       }
 
@@ -134,57 +103,53 @@
 
       .register-btn {
         width: 100%;
-
         padding: 13px;
-
         background: #0d6efd;
-
         color: white;
-
         border: none;
-
         border-radius: 6px;
-
         font-size: 16px;
-
         font-weight: bold;
-
         cursor: pointer;
+      }
+
+      .register-btn:hover {
+        background: #0b5ed7;
+      }
+
+      .register-btn:disabled {
+        background: #8ab4f8;
+        cursor: not-allowed;
       }
 
       .message {
         display: none;
-
         margin-top: 18px;
-
         padding: 12px;
-
         border-radius: 6px;
-
         text-align: center;
       }
 
       .login-text {
         text-align: center;
-
         margin-top: 20px;
-
         color: #666;
       }
 
       .login-text a {
         color: #0d6efd;
-
         font-weight: bold;
-
         text-decoration: none;
       }
 
       @media (max-width: 600px) {
         .row {
           flex-direction: column;
-
           gap: 0;
+        }
+
+        .card {
+          padding: 25px;
         }
       }
     </style>
@@ -207,9 +172,8 @@
 
         <form id="registrationForm">
           <!-- NAME -->
-
           <div class="form-group">
-            <label> Full Name </label>
+            <label for="name">Full Name</label>
 
             <input
               type="text"
@@ -220,59 +184,45 @@
           </div>
 
           <!-- DOB + GENDER -->
-
           <div class="row">
             <div class="form-group">
-              <label> Date of Birth </label>
+              <label for="dob">Date of Birth</label>
 
               <input type="date" id="dob" required />
             </div>
 
             <div class="form-group">
-              <label> Gender </label>
+              <label for="gender">Gender</label>
 
               <select id="gender" required>
                 <option value="">Select Gender</option>
-
                 <option value="Male">Male</option>
-
                 <option value="Female">Female</option>
-
                 <option value="Other">Other</option>
               </select>
             </div>
           </div>
 
           <!-- BLOOD GROUP -->
-
           <div class="form-group">
-            <label> Blood Group </label>
+            <label for="bloodGroup">Blood Group</label>
 
             <select id="bloodGroup" required>
               <option value="">Select Blood Group</option>
-
               <option value="A+">A+</option>
-
               <option value="A-">A-</option>
-
               <option value="B+">B+</option>
-
               <option value="B-">B-</option>
-
               <option value="O+">O+</option>
-
               <option value="O-">O-</option>
-
               <option value="AB+">AB+</option>
-
               <option value="AB-">AB-</option>
             </select>
           </div>
 
           <!-- MOBILE -->
-
           <div class="form-group">
-            <label> Mobile Number </label>
+            <label for="mobile">Mobile Number</label>
 
             <input
               type="tel"
@@ -285,9 +235,8 @@
           </div>
 
           <!-- EMAIL -->
-
           <div class="form-group">
-            <label> Email Address </label>
+            <label for="email">Email Address</label>
 
             <input
               type="email"
@@ -298,9 +247,8 @@
           </div>
 
           <!-- PASSWORD -->
-
           <div class="form-group">
-            <label> Password </label>
+            <label for="password">Password</label>
 
             <input
               type="password"
@@ -312,9 +260,8 @@
           </div>
 
           <!-- CONFIRM PASSWORD -->
-
           <div class="form-group">
-            <label> Confirm Password </label>
+            <label for="confirmPassword"> Confirm Password </label>
 
             <input
               type="password"
@@ -325,7 +272,10 @@
             />
           </div>
 
-          <button type="submit" class="register-btn">Register</button>
+          <!-- REGISTER -->
+          <button type="submit" class="register-btn" id="registerButton">
+            Register
+          </button>
 
           <div id="message" class="message"></div>
         </form>
@@ -341,7 +291,7 @@
     <script>
       document
         .getElementById("registrationForm")
-        .addEventListener("submit", function (event) {
+        .addEventListener("submit", async function (event) {
           event.preventDefault();
 
           const name = document.getElementById("name").value.trim();
@@ -363,13 +313,15 @@
 
           const message = document.getElementById("message");
 
-          /* MOBILE VALIDATION */
+          const registerButton = document.getElementById("registerButton");
 
+          // Clear old message
+          message.style.display = "none";
+
+          // MOBILE VALIDATION
           if (!/^[0-9]{10}$/.test(mobile)) {
             message.style.display = "block";
-
             message.style.background = "#ffe5e5";
-
             message.style.color = "#b00020";
 
             message.innerText = "Please enter a valid 10 digit mobile number.";
@@ -377,13 +329,21 @@
             return;
           }
 
-          /* PASSWORD */
+          // PASSWORD VALIDATION
+          if (password.length < 6) {
+            message.style.display = "block";
+            message.style.background = "#ffe5e5";
+            message.style.color = "#b00020";
 
+            message.innerText = "Password must be at least 6 characters.";
+
+            return;
+          }
+
+          // CONFIRM PASSWORD
           if (password !== confirmPassword) {
             message.style.display = "block";
-
             message.style.background = "#ffe5e5";
-
             message.style.color = "#b00020";
 
             message.innerText = "Passwords do not match.";
@@ -391,51 +351,92 @@
             return;
           }
 
-          /* PATIENT ID */
+          // Disable button while registering
+          registerButton.disabled = true;
+          registerButton.innerText = "Registering...";
 
-          const patientId = "AHC" + Date.now();
+          try {
+            // SEND DATA TO BACKEND
+            const response = await fetch("/api/auth/register", {
+              method: "POST",
 
-          /* PATIENT DATA */
+              headers: {
+                "Content-Type": "application/json",
+              },
 
-          const patient = {
-            patientId: patientId,
+              body: JSON.stringify({
+                email: email,
+                password: password,
+                full_name: name,
+                phone: mobile,
+                role: "patient",
+              }),
+            });
 
-            name: name,
+            // Read response
+            const result = await response.json();
 
-            dob: dob,
+            // BACKEND ERROR
+            if (!response.ok) {
+              let errorMessage = "Registration failed.";
 
-            gender: gender,
+              if (result.detail) {
+                if (typeof result.detail === "string") {
+                  errorMessage = result.detail;
+                } else {
+                  errorMessage = JSON.stringify(result.detail);
+                }
+              }
 
-            bloodGroup: bloodGroup,
+              throw new Error(errorMessage);
+            }
 
-            mobile: mobile,
+            // SAVE TOKEN IF BACKEND RETURNS IT
+            if (result.access_token) {
+              localStorage.setItem("access_token", result.access_token);
+            }
 
-            email: email,
-          };
+            if (result.refresh_token) {
+              localStorage.setItem("refresh_token", result.refresh_token);
+            }
 
-          /* SAVE PATIENT */
+            // SAVE PATIENT INFORMATION LOCALLY
+            const patient = {
+              name: name,
+              dob: dob,
+              gender: gender,
+              bloodGroup: bloodGroup,
+              mobile: mobile,
+              email: email,
+            };
 
-          localStorage.setItem("patientData", JSON.stringify(patient));
+            localStorage.setItem("patientData", JSON.stringify(patient));
 
-          /* SAVE PASSWORD */
+            // SUCCESS MESSAGE
+            message.style.display = "block";
+            message.style.background = "#d1e7dd";
+            message.style.color = "#0f5132";
 
-          localStorage.setItem("patientPassword", password);
+            message.innerText =
+              "Registration successful! Redirecting to login...";
 
-          /* SUCCESS */
+            // GO TO LOGIN
+            setTimeout(function () {
+              window.location.href = "login.html";
+            }, 1500);
+          } catch (error) {
+            console.error("Registration error:", error);
 
-          message.style.display = "block";
+            message.style.display = "block";
+            message.style.background = "#ffe5e5";
+            message.style.color = "#b00020";
 
-          message.style.background = "#d1e7dd";
+            message.innerText =
+              error.message || "Registration failed. Please try again.";
 
-          message.style.color = "#0f5132";
-
-          message.innerText = "Registration successful!";
-
-          /* GO LOGIN */
-
-          setTimeout(function () {
-            window.location.href = "login.html";
-          }, 1200);
+            registerButton.disabled = false;
+            registerButton.innerText = "Register";
+          }
         });
     </script>
   </body>
