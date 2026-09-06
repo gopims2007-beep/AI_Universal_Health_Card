@@ -1,4 +1,5 @@
 from pathlib import Path
+from datetime import date
 from html import escape
 
 from fastapi import APIRouter, Depends, HTTPException
@@ -21,6 +22,207 @@ router = APIRouter(tags=["Emergency QR Access"])
 
 
 # =========================================================
+# HELPER FUNCTIONS
+# =========================================================
+
+def safe(value, default="Not Available"):
+    """
+    Safely convert database values into HTML-safe text.
+    """
+    if value is None:
+        return default
+
+    text = str(value).strip()
+
+    if not text:
+        return default
+
+    return escape(text)
+
+
+def format_date(value):
+    """
+    Format date as DD-MM-YYYY.
+    """
+    if not value:
+        return "Not Available"
+
+    try:
+        return value.strftime("%d-%m-%Y")
+    except Exception:
+        return safe(value)
+
+
+def calculate_age(dob):
+    """
+    Calculate patient's current age from date of birth.
+    """
+    if not dob:
+        return "Not Available"
+
+    try:
+        today = date.today()
+
+        age = (
+            today.year
+            - dob.year
+            - ((today.month, today.day) < (dob.month, dob.day))
+        )
+
+        return str(age)
+
+    except Exception:
+        return "Not Available"
+
+
+def list_to_text(value):
+    """
+    Convert JSON list / string / other value into readable text.
+    """
+    if value is None:
+        return "Not Available"
+
+    if isinstance(value, list):
+        if not value:
+            return "Not Available"
+
+        items = []
+
+        for item in value:
+            if isinstance(item, dict):
+                parts = []
+
+                for key, val in item.items():
+                    if val is not None and str(val).strip():
+                        parts.append(
+                            f"{key}: {val}"
+                        )
+
+                if parts:
+                    items.append(" | ".join(parts))
+            else:
+                items.append(str(item))
+
+        return ", ".join(items) if items else "Not Available"
+
+    if isinstance(value, dict):
+        if not value:
+            return "Not Available"
+
+        parts = []
+
+        for key, val in value.items():
+            if val is not None and str(val).strip():
+                parts.append(
+                    f"{key}: {val}"
+                )
+
+        return ", ".join(parts) if parts else "Not Available"
+
+    text = str(value).strip()
+
+    return text if text else "Not Available"
+
+
+def html_list(value):
+    """
+    Convert list/dict/string into HTML bullet list.
+    """
+    if value is None:
+        return """
+        <div class="empty-data">
+            Not Available
+        </div>
+        """
+
+    if isinstance(value, list):
+
+        if not value:
+            return """
+            <div class="empty-data">
+                Not Available
+            </div>
+            """
+
+        html = "<ul class='data-list'>"
+
+        for item in value:
+
+            if isinstance(item, dict):
+
+                item_parts = []
+
+                for key, val in item.items():
+
+                    if val is not None and str(val).strip():
+
+                        item_parts.append(
+                            f"<strong>{escape(str(key))}:</strong> "
+                            f"{escape(str(val))}"
+                        )
+
+                if item_parts:
+                    html += (
+                        "<li>"
+                        + " | ".join(item_parts)
+                        + "</li>"
+                    )
+
+            else:
+
+                html += (
+                    "<li>"
+                    + escape(str(item))
+                    + "</li>"
+                )
+
+        html += "</ul>"
+
+        return html
+
+    if isinstance(value, dict):
+
+        if not value:
+            return """
+            <div class="empty-data">
+                Not Available
+            </div>
+            """
+
+        html = "<ul class='data-list'>"
+
+        for key, val in value.items():
+
+            if val is not None and str(val).strip():
+
+                html += (
+                    "<li>"
+                    f"<strong>{escape(str(key))}:</strong> "
+                    f"{escape(str(val))}"
+                    "</li>"
+                )
+
+        html += "</ul>"
+
+        return html
+
+    text = str(value).strip()
+
+    if not text:
+        return """
+        <div class="empty-data">
+            Not Available
+        </div>
+        """
+
+    return (
+        "<div class='text-data'>"
+        + escape(text)
+        + "</div>"
+    )
+
+
+# =========================================================
 # EMERGENCY QR PATIENT DETAILS
 # =========================================================
 
@@ -32,9 +234,10 @@ def emergency_view(
     token: str,
     db: Session = Depends(get_db),
 ):
-    # -----------------------------------------------------
-    # Validate QR
-    # -----------------------------------------------------
+
+    # =====================================================
+    # 1. VALIDATE QR TOKEN
+    # =====================================================
 
     qr = (
         db.query(QRCodeRecord)
@@ -51,9 +254,9 @@ def emergency_view(
             detail="QR code is invalid or revoked",
         )
 
-    # -----------------------------------------------------
-    # Patient
-    # -----------------------------------------------------
+    # =====================================================
+    # 2. GET PATIENT PROFILE
+    # =====================================================
 
     patient = db.get(
         PatientProfile,
@@ -66,9 +269,9 @@ def emergency_view(
             detail="Patient profile not found",
         )
 
-    # -----------------------------------------------------
-    # User
-    # -----------------------------------------------------
+    # =====================================================
+    # 3. GET USER
+    # =====================================================
 
     user = db.get(
         User,
@@ -81,9 +284,9 @@ def emergency_view(
             detail="Patient user not found",
         )
 
-    # -----------------------------------------------------
-    # Medical History
-    # -----------------------------------------------------
+    # =====================================================
+    # 4. GET MEDICAL HISTORY
+    # =====================================================
 
     history = (
         db.query(MedicalHistory)
@@ -93,9 +296,9 @@ def emergency_view(
         .first()
     )
 
-    # -----------------------------------------------------
-    # Medical Reports
-    # -----------------------------------------------------
+    # =====================================================
+    # 5. GET MEDICAL REPORTS
+    # =====================================================
 
     reports = (
         db.query(MedicalReport)
@@ -109,72 +312,8 @@ def emergency_view(
     )
 
     # =====================================================
-    # SAFE PATIENT DATA
+    # 6. GET EMERGENCY DOCUMENTS
     # =====================================================
-
-    patient_name = escape(
-        str(user.full_name or "Not Available")
-    )
-
-    card_id = escape(
-        str(patient.card_id or "Not Available")
-    )
-
-    blood_group = escape(
-        str(patient.blood_group or "Not Available")
-    )
-
-    emergency_name = escape(
-        str(
-            patient.emergency_contact_name
-            or "Not Available"
-        )
-    )
-
-    emergency_phone = escape(
-        str(
-            patient.emergency_contact_phone
-            or "Not Available"
-        )
-    )
-
-    emergency_relation = escape(
-        str(
-            patient.emergency_contact_relation
-            or "Not Available"
-        )
-    )
-
-    # =====================================================
-    # ALLERGIES
-    # =====================================================
-
-    allergies = (
-        history.allergies
-        if history and history.allergies
-        else []
-    )
-
-    if isinstance(allergies, str):
-        allergy_text = allergies
-    elif isinstance(allergies, list):
-        allergy_text = ", ".join(
-            str(item)
-            for item in allergies
-        )
-    else:
-        allergy_text = str(allergies)
-
-    if not allergy_text.strip():
-        allergy_text = "No known severe allergies"
-
-    allergy_text = escape(
-        allergy_text
-    )
-
-    # -----------------------------------------------------
-    # Emergency Documents
-    # -----------------------------------------------------
 
     documents = (
         db.query(EmergencyDocument)
@@ -188,43 +327,177 @@ def emergency_view(
     )
 
     # =====================================================
-    # MEDICAL REPORT HTML
+    # 7. PATIENT BASIC INFORMATION
+    # =====================================================
+
+    patient_name = safe(
+        user.full_name
+    )
+
+    card_id = safe(
+        patient.card_id
+    )
+
+    date_of_birth = safe(
+        format_date(patient.date_of_birth)
+    )
+
+    age = safe(
+        calculate_age(patient.date_of_birth)
+    )
+
+    gender = safe(
+        patient.gender
+    )
+
+    phone = safe(
+        user.phone
+    )
+
+    email = safe(
+        user.email
+    )
+
+    blood_group = safe(
+        patient.blood_group
+    )
+
+    height = (
+        f"{patient.height_cm:g} cm"
+        if patient.height_cm is not None
+        else "Not Available"
+    )
+
+    weight = (
+        f"{patient.weight_kg:g} kg"
+        if patient.weight_kg is not None
+        else "Not Available"
+    )
+
+    bmi = (
+        f"{patient.bmi:.2f}"
+        if patient.bmi is not None
+        else "Not Available"
+    )
+
+    address = safe(
+        patient.address
+    )
+
+    # =====================================================
+    # 8. EMERGENCY CONTACT
+    # =====================================================
+
+    emergency_name = safe(
+        patient.emergency_contact_name
+    )
+
+    emergency_phone = safe(
+        patient.emergency_contact_phone
+    )
+
+    emergency_relation = safe(
+        patient.emergency_contact_relation
+    )
+
+    # =====================================================
+    # 9. MEDICAL HISTORY
+    # =====================================================
+
+    diseases = (
+        history.diseases
+        if history
+        else None
+    )
+
+    allergies = (
+        history.allergies
+        if history
+        else None
+    )
+
+    medications = (
+        history.current_medications
+        if history
+        else None
+    )
+
+    surgery_history = (
+        history.surgery_history
+        if history
+        else None
+    )
+
+    vaccination_records = (
+        history.vaccination_records
+        if history
+        else None
+    )
+
+    insurance_details = (
+        history.insurance_details
+        if history
+        else None
+    )
+
+    medical_notes = (
+        safe(history.notes)
+        if history and history.notes
+        else "Not Available"
+    )
+
+    # =====================================================
+    # 10. ALLERGIES TEXT
+    # =====================================================
+
+    allergy_text = list_to_text(
+        allergies
+    )
+
+    if allergy_text == "Not Available":
+        allergy_text = "No known allergies"
+
+    allergy_text = safe(
+        allergy_text
+    )
+
+    # =====================================================
+    # 11. MEDICAL REPORT CARDS
     # =====================================================
 
     report_cards = ""
 
     for report in reports:
 
-        report_type = escape(
-            str(
-                report.report_type
-                or "Medical Report"
-            )
+        report_type = safe(
+            report.report_type,
+            "Medical Report",
         )
 
-        filename = escape(
-            str(
-                report.original_filename
-                or "Medical Report"
-            )
+        filename = safe(
+            report.original_filename,
+            "Medical Report",
         )
 
         if report.uploaded_at:
-            uploaded_at = escape(
+
+            uploaded_at = safe(
                 report.uploaded_at.strftime(
                     "%d-%m-%Y %I:%M %p"
                 )
             )
+
         else:
+
             uploaded_at = "Not Available"
 
         view_url = (
-            f"/emergency/{token}/report/"
+            f"/emergency/{escape(token)}/report/"
             f"{report.id}/view"
         )
 
         download_url = (
-            f"/emergency/{token}/report/"
+            f"/emergency/{escape(token)}/report/"
             f"{report.id}/download"
         )
 
@@ -259,7 +532,7 @@ def emergency_view(
                     target="_blank"
                     rel="noopener noreferrer"
                 >
-                    👁 View PDF
+                    👁 View
                 </a>
 
                 <a
@@ -275,50 +548,66 @@ def emergency_view(
         """
 
     if not report_cards:
+
         report_cards = """
         <div class="empty-reports">
-
-            <div class="empty-icon">
-                📂
-            </div>
-
+            📂
             <p>
                 No medical reports available.
             </p>
-
         </div>
         """
 
     # =====================================================
-    # EMERGENCY DOCUMENTS HTML
+    # 12. EMERGENCY DOCUMENT CARDS
     # =====================================================
 
     document_cards = ""
 
     for doc in documents:
 
-        file_name = escape(
-            str(doc.file_name or "PDF Document")
+        file_name = safe(
+            doc.file_name,
+            "PDF Document",
         )
 
-        category = escape(
-            str(doc.document_category or "Medical Document")
+        category = safe(
+            doc.document_category,
+            "Medical Document",
         )
 
-        description = escape(
-            str(doc.description or "")
+        description = safe(
+            doc.description,
+            "",
         )
 
-        drive_url = str(doc.google_drive_url).strip()
+        drive_url = str(
+            doc.google_drive_url or ""
+        ).strip()
 
-        if not drive_url.startswith(("http://", "https://")):
-            drive_url = "https://" + drive_url
+        if drive_url:
+
+            if not drive_url.startswith(
+                ("http://", "https://")
+            ):
+                drive_url = (
+                    "https://" + drive_url
+                )
+
+            drive_url = escape(
+                drive_url,
+                quote=True,
+            )
+
+        else:
+
+            drive_url = "#"
 
         document_cards += f"""
         <div class="document-card">
 
             <div class="document-icon">
-                📄
+                📋
             </div>
 
             <div class="document-info">
@@ -345,7 +634,7 @@ def emergency_view(
                     target="_blank"
                     rel="noopener noreferrer"
                 >
-                    🔗 Open PDF
+                    🔗 Open
                 </a>
 
             </div>
@@ -354,22 +643,18 @@ def emergency_view(
         """
 
     if not document_cards:
+
         document_cards = """
         <div class="empty-documents">
-
-            <div class="empty-icon">
-                📋
-            </div>
-
+            📋
             <p>
                 No emergency documents linked.
             </p>
-
         </div>
         """
 
     # =====================================================
-    # EMERGENCY HTML PAGE
+    # 13. EMERGENCY HTML PAGE
     # =====================================================
 
     html = f"""
@@ -395,6 +680,7 @@ def emergency_view(
         Emergency Health Card - {patient_name}
     </title>
 
+
     <style>
 
         * {{
@@ -403,22 +689,25 @@ def emergency_view(
 
         body {{
             margin: 0;
-
             font-family:
                 Arial,
                 Helvetica,
                 sans-serif;
 
             background:
-                #f1f5f9;
+                linear-gradient(
+                    135deg,
+                    #eef2ff,
+                    #f8fafc
+                );
 
-            color:
-                #172033;
+            color: #172033;
         }}
 
-        /* =================================================
-           TOP HEADER
-        ================================================= */
+
+        /* ================================================
+           HEADER
+        ================================================ */
 
         .top-bar {{
             background:
@@ -428,69 +717,54 @@ def emergency_view(
                     #dc2626
                 );
 
-            color:
-                white;
+            color: white;
 
-            padding:
-                24px 20px;
+            padding: 28px 20px;
 
-            text-align:
-                center;
+            text-align: center;
 
             box-shadow:
-                0 3px 12px
+                0 5px 20px
                 rgba(0, 0, 0, 0.15);
         }}
 
         .emergency-icon {{
-            font-size:
-                38px;
-
-            margin-bottom:
-                5px;
+            font-size: 42px;
+            margin-bottom: 5px;
         }}
 
         .top-bar h1 {{
-            margin:
-                0;
-
-            font-size:
-                28px;
+            margin: 0;
+            font-size: 30px;
         }}
 
         .top-bar p {{
-            margin:
-                8px 0 0;
-
-            font-size:
-                14px;
-
-            opacity:
-                0.95;
+            margin: 8px 0 0;
+            font-size: 14px;
+            opacity: 0.95;
         }}
 
-        /* =================================================
-           MAIN CONTAINER
-        ================================================= */
+
+        /* ================================================
+           CONTAINER
+        ================================================ */
 
         .container {{
-            width:
-                min(
-                    calc(100% - 30px),
-                    1000px
-                );
+            width: min(
+                calc(100% - 30px),
+                1050px
+            );
 
-            margin:
-                25px auto 50px;
+            margin: 25px auto 60px;
         }}
 
-        /* =================================================
+
+        /* ================================================
            WARNING
-        ================================================= */
+        ================================================ */
 
         .alert {{
-            background:
-                #fff7ed;
+            background: #fff7ed;
 
             border:
                 1px solid #fed7aa;
@@ -498,41 +772,33 @@ def emergency_view(
             border-left:
                 5px solid #f97316;
 
-            border-radius:
-                14px;
+            border-radius: 14px;
 
-            padding:
-                16px 18px;
+            padding: 16px 18px;
 
-            margin-bottom:
-                20px;
+            margin-bottom: 20px;
 
-            color:
-                #9a3412;
+            color: #9a3412;
 
-            font-size:
-                14px;
+            font-size: 14px;
         }}
 
-        /* =================================================
+
+        /* ================================================
            CARD
-        ================================================= */
+        ================================================ */
 
         .card {{
-            background:
-                white;
+            background: white;
 
-            border-radius:
-                18px;
+            border-radius: 20px;
 
-            padding:
-                25px;
+            padding: 25px;
 
-            margin-bottom:
-                20px;
+            margin-bottom: 20px;
 
             box-shadow:
-                0 5px 20px
+                0 8px 30px
                 rgba(
                     15,
                     23,
@@ -541,93 +807,79 @@ def emergency_view(
                 );
         }}
 
+
         .section-title {{
             margin:
                 0 0 20px;
 
-            font-size:
-                21px;
+            font-size: 22px;
 
-            color:
-                #172033;
+            color: #172033;
         }}
 
-        /* =================================================
+
+        /* ================================================
            PATIENT HEADER
-        ================================================= */
+        ================================================ */
 
         .patient-header {{
-            display:
-                flex;
+            display: flex;
 
-            align-items:
-                center;
+            align-items: center;
 
-            gap:
-                18px;
+            gap: 18px;
 
-            margin-bottom:
-                22px;
+            margin-bottom: 22px;
         }}
 
         .patient-avatar {{
-            width:
-                68px;
+            width: 75px;
 
-            height:
-                68px;
+            height: 75px;
 
-            min-width:
-                68px;
+            min-width: 75px;
 
-            border-radius:
-                50%;
+            border-radius: 50%;
 
             background:
-                #fee2e2;
+                linear-gradient(
+                    135deg,
+                    #fee2e2,
+                    #fecaca
+                );
 
-            display:
-                flex;
+            display: flex;
 
-            align-items:
-                center;
+            align-items: center;
 
-            justify-content:
-                center;
+            justify-content: center;
 
-            font-size:
-                32px;
+            font-size: 35px;
         }}
 
         .patient-name {{
-            margin:
-                0;
+            margin: 0;
 
-            font-size:
-                26px;
+            font-size: 28px;
 
-            color:
-                #111827;
+            color: #111827;
         }}
 
         .card-id {{
-            margin-top:
-                5px;
+            margin-top: 6px;
 
-            color:
-                #64748b;
+            color: #64748b;
 
-            font-size:
-                14px;
+            font-size: 14px;
         }}
 
-        /* =================================================
+
+        /* ================================================
            DETAILS GRID
-        ================================================= */
+        ================================================ */
 
         .details-grid {{
-            display:
-                grid;
+            display: grid;
 
             grid-template-columns:
                 repeat(
@@ -635,622 +887,501 @@ def emergency_view(
                     minmax(0, 1fr)
                 );
 
-            gap:
-                15px;
+            gap: 15px;
         }}
 
         .detail {{
-            background:
-                #f8fafc;
+            background: #f8fafc;
 
             border:
                 1px solid #e2e8f0;
 
-            border-radius:
-                12px;
+            border-radius: 13px;
 
-            padding:
-                16px;
+            padding: 17px;
         }}
 
         .label {{
-            color:
-                #64748b;
+            color: #64748b;
 
-            font-size:
-                13px;
+            font-size: 13px;
 
-            margin-bottom:
-                7px;
+            margin-bottom: 7px;
         }}
 
         .value {{
-            font-weight:
-                600;
+            font-weight: 700;
 
-            font-size:
-                16px;
+            font-size: 16px;
 
-            word-break:
-                break-word;
+            word-break: break-word;
+
+            color: #172033;
         }}
 
         .blood {{
-            color:
-                #b91c1c;
+            color: #b91c1c;
 
-            font-size:
-                21px;
+            font-size: 22px;
         }}
 
         .allergy-text {{
-            color:
-                #b45309;
+            color: #b45309;
         }}
 
-        /* =================================================
+
+        /* ================================================
+           ADDRESS
+        ================================================ */
+
+        .address-box {{
+            background: #f8fafc;
+
+            border:
+                1px solid #e2e8f0;
+
+            border-radius: 13px;
+
+            padding: 18px;
+
+            line-height: 1.6;
+
+            white-space: pre-wrap;
+        }}
+
+
+        /* ================================================
            EMERGENCY CONTACT
-        ================================================= */
+        ================================================ */
 
         .contact-box {{
             background:
-                #eff6ff;
+                linear-gradient(
+                    135deg,
+                    #eff6ff,
+                    #dbeafe
+                );
 
             border:
                 1px solid #bfdbfe;
 
-            border-radius:
-                14px;
+            border-radius: 15px;
 
-            padding:
-                19px;
+            padding: 20px;
         }}
 
         .contact-name {{
-            font-size:
-                19px;
+            font-size: 20px;
 
-            font-weight:
-                700;
+            font-weight: 800;
 
-            margin-bottom:
-                9px;
+            margin-bottom: 10px;
 
-            color:
-                #1e3a8a;
+            color: #1e3a8a;
         }}
 
         .contact-line {{
-            margin:
-                6px 0;
+            margin: 7px 0;
 
-            color:
-                #334155;
+            color: #334155;
 
-            font-size:
-                15px;
+            font-size: 15px;
         }}
 
-        /* =================================================
-           REPORT CARD
-        ================================================= */
+
+        /* ================================================
+           MEDICAL HISTORY
+        ================================================ */
+
+        .history-grid {{
+            display: grid;
+
+            grid-template-columns:
+                repeat(
+                    2,
+                    minmax(0, 1fr)
+                );
+
+            gap: 15px;
+        }}
+
+        .history-box {{
+            border:
+                1px solid #e2e8f0;
+
+            background: #ffffff;
+
+            border-radius: 14px;
+
+            padding: 18px;
+        }}
+
+        .history-title {{
+            font-size: 16px;
+
+            font-weight: 800;
+
+            margin-bottom: 12px;
+
+            color: #1e293b;
+        }}
+
+        .data-list {{
+            margin: 0;
+
+            padding-left: 20px;
+
+            color: #475569;
+
+            line-height: 1.7;
+        }}
+
+        .data-list li {{
+            margin-bottom: 5px;
+        }}
+
+        .text-data {{
+            color: #475569;
+
+            line-height: 1.6;
+
+            white-space: pre-wrap;
+        }}
+
+        .empty-data {{SS
+            color: #94a3b8;
+
+            font-style: italic;
+        }}
+
+
+        /* ================================================
+           REPORTS
+        ================================================ */
 
         .report-card {{
-            display:
-                flex;
+            display: flex;
 
-            align-items:
-                center;
+            align-items: center;
 
-            gap:
-                15px;
+            gap: 15px;
 
             border:
                 1px solid #e2e8f0;
 
-            border-radius:
-                14px;
+            border-radius: 14px;
 
-            padding:
-                16px;
+            padding: 16px;
 
-            margin-bottom:
-                12px;
+            margin-bottom: 12px;
 
-            transition:
-                0.2s ease;
-
-            background:
-                #ffffff;
-        }}
-
-        .report-card:hover {{
-            box-shadow:
-                0 4px 14px
-                rgba(
-                    15,
-                    23,
-                    42,
-                    0.08
-                );
+            background: white;
         }}
 
         .report-icon {{
-            width:
-                48px;
+            width: 50px;
 
-            height:
-                48px;
+            height: 50px;
 
-            min-width:
-                48px;
+            min-width: 50px;
 
-            border-radius:
-                12px;
+            border-radius: 12px;
 
-            background:
-                #fee2e2;
+            background: #fee2e2;
 
-            display:
-                flex;
+            display: flex;
 
-            align-items:
-                center;
+            align-items: center;
 
-            justify-content:
-                center;
+            justify-content: center;
 
-            font-size:
-                24px;
+            font-size: 25px;
         }}
 
         .report-info {{
-            flex:
-                1;
+            flex: 1;
 
-            min-width:
-                0;
+            min-width: 0;
         }}
 
         .report-title {{
-            font-weight:
-                700;
+            font-weight: 800;
 
-            font-size:
-                17px;
+            font-size: 17px;
 
-            color:
-                #111827;
+            color: #111827;
         }}
 
         .report-file {{
-            margin-top:
-                5px;
+            margin-top: 5px;
 
-            color:
-                #475569;
+            color: #475569;
 
-            word-break:
-                break-word;
+            word-break: break-word;
 
-            font-size:
-                14px;
+            font-size: 14px;
         }}
 
         .report-date {{
-            margin-top:
-                5px;
+            margin-top: 5px;
 
-            color:
-                #94a3b8;
+            color: #94a3b8;
 
-            font-size:
-                12px;
+            font-size: 12px;
         }}
 
-        /* =================================================
-           BUTTONS
-        ================================================= */
-
         .report-actions {{
-            display:
-                flex;
+            display: flex;
 
-            gap:
-                8px;
+            gap: 8px;
 
-            flex-wrap:
-                wrap;
+            flex-wrap: wrap;
         }}
 
         .report-actions a {{
-            display:
-                inline-block;
+            display: inline-block;
 
-            text-decoration:
-                none;
+            text-decoration: none;
 
-            border-radius:
-                9px;
+            border-radius: 9px;
 
-            padding:
-                10px 14px;
+            padding: 10px 14px;
 
-            font-size:
-                13px;
+            font-size: 13px;
 
-            font-weight:
-                700;
+            font-weight: 700;
 
-            white-space:
-                nowrap;
+            white-space: nowrap;
         }}
 
         .view-btn {{
-            background:
-                #2563eb;
+            background: #2563eb;
 
-            color:
-                white;
-        }}
-
-        .view-btn:hover {{
-            background:
-                #1d4ed8;
+            color: white;
         }}
 
         .download-btn {{
-            background:
-                #0f172a;
+            background: #0f172a;
 
-            color:
-                white;
+            color: white;
         }}
 
-        .download-btn:hover {{
-            background:
-                #1e293b;
-        }}
 
-        /* =================================================
-           EMPTY REPORTS
-        ================================================= */
-
-        .empty-reports {{
-            text-align:
-                center;
-
-            color:
-                #64748b;
-
-            padding:
-                35px 20px;
-        }}
-
-        .empty-icon {{
-            font-size:
-                40px;
-
-            margin-bottom:
-                8px;
-        }}
-
-        /* =================================================
-           DOCUMENT CARD
-        ================================================= */
+        /* ================================================
+           DOCUMENTS
+        ================================================ */
 
         .document-card {{
-            display:
-                flex;
+            display: flex;
 
-            align-items:
-                center;
+            align-items: center;
 
-            gap:
-                15px;
+            gap: 15px;
 
             border:
                 1px solid #e2e8f0;
 
-            border-radius:
-                14px;
+            border-radius: 14px;
 
-            padding:
-                16px;
+            padding: 16px;
 
-            margin-bottom:
-                12px;
+            margin-bottom: 12px;
 
-            transition:
-                0.2s ease;
-
-            background:
-                #ffffff;
-        }}
-
-        .document-card:hover {{
-            box-shadow:
-                0 4px 14px
-                rgba(
-                    15,
-                    23,
-                    42,
-                    0.08
-                );
+            background: white;
         }}
 
         .document-icon {{
-            width:
-                48px;
+            width: 50px;
 
-            height:
-                48px;
+            height: 50px;
 
-            min-width:
-                48px;
+            min-width: 50px;
 
-            border-radius:
-                12px;
+            border-radius: 12px;
 
-            background:
-                #dbeafe;
+            background: #dbeafe;
 
-            display:
-                flex;
+            display: flex;
 
-            align-items:
-                center;
+            align-items: center;
 
-            justify-content:
-                center;
+            justify-content: center;
 
-            font-size:
-                24px;
+            font-size: 25px;
         }}
 
         .document-info {{
-            flex:
-                1;
+            flex: 1;
 
-            min-width:
-                0;
+            min-width: 0;
         }}
 
         .document-category {{
-            font-size:
-                12px;
+            font-size: 12px;
 
-            color:
-                #2563eb;
+            color: #2563eb;
 
-            font-weight:
-                700;
+            font-weight: 800;
 
-            text-transform:
-                uppercase;
+            text-transform: uppercase;
 
-            letter-spacing:
-                0.5px;
+            letter-spacing: 0.5px;
         }}
 
         .document-title {{
-            margin-top:
-                5px;
+            margin-top: 5px;
 
-            font-weight:
-                700;
+            font-weight: 800;
 
-            font-size:
-                17px;
+            font-size: 17px;
 
-            color:
-                #111827;
+            color: #111827;
 
-            word-break:
-                break-word;
+            word-break: break-word;
         }}
 
         .document-desc {{
-            margin-top:
-                5px;
+            margin-top: 5px;
 
-            color:
-                #64748b;
+            color: #64748b;
 
-            font-size:
-                14px;
+            font-size: 14px;
 
-            word-break:
-                break-word;
-        }}
-
-        /* =================================================
-           DOCUMENT ACTIONS
-        ================================================= */
-
-        .document-actions {{
-            display:
-                flex;
-
-            gap:
-                8px;
-
-            flex-wrap:
-                wrap;
+            word-break: break-word;
         }}
 
         .open-btn {{
-            display:
-                inline-block;
+            display: inline-block;
 
-            text-decoration:
-                none;
+            text-decoration: none;
 
-            border-radius:
-                9px;
+            border-radius: 9px;
 
-            padding:
-                10px 14px;
+            padding: 10px 14px;
 
-            font-size:
-                13px;
+            font-size: 13px;
 
-            font-weight:
-                700;
+            font-weight: 700;
 
-            white-space:
-                nowrap;
+            background: #2563eb;
 
-            background:
-                #2563eb;
-
-            color:
-                white;
+            color: white;
         }}
 
-        .open-btn:hover {{
-            background:
-                #1d4ed8;
-        }}
 
-        /* =================================================
-           EMPTY DOCUMENTS
-        ================================================= */
+        /* ================================================
+           EMPTY
+        ================================================ */
 
+        .empty-reports,
         .empty-documents {{
-            text-align:
-                center;
+            text-align: center;
 
-            color:
-                #64748b;
+            color: #64748b;
 
-            padding:
-                35px 20px;
+            padding: 35px 20px;
         }}
 
-        /* =================================================
+
+        /* ================================================
            FOOTER
-        ================================================= */
+        ================================================ */
 
         .footer {{
-            text-align:
-                center;
+            text-align: center;
 
-            color:
-                #64748b;
+            color: #64748b;
 
-            font-size:
-                12px;
+            font-size: 12px;
 
-            padding:
-                10px;
+            padding: 15px;
         }}
 
-        /* =================================================
-           MOBILE
-        ================================================= */
 
-        @media (
-            max-width: 700px
-        ) {{
+        /* ================================================
+           MOBILE
+        ================================================ */
+
+        @media (max-width: 700px) {{
 
             .container {{
                 width:
                     calc(100% - 20px);
 
-                margin-top:
-                    15px;
+                margin-top: 15px;
             }}
 
             .card {{
-                padding:
-                    18px;
+                padding: 18px;
 
-                border-radius:
-                    15px;
+                border-radius: 16px;
             }}
 
             .top-bar {{
-                padding:
-                    20px 15px;
+                padding: 22px 15px;
             }}
 
             .top-bar h1 {{
-                font-size:
-                    23px;
+                font-size: 23px;
             }}
 
             .patient-header {{
-                gap:
-                    13px;
+                gap: 13px;
             }}
 
             .patient-avatar {{
-                width:
-                    55px;
+                width: 58px;
 
-                height:
-                    55px;
+                height: 58px;
 
-                min-width:
-                    55px;
+                min-width: 58px;
 
-                font-size:
-                    26px;
+                font-size: 27px;
             }}
 
             .patient-name {{
-                font-size:
-                    21px;
+                font-size: 21px;
             }}
 
             .details-grid {{
-                grid-template-columns:
-                    1fr;
+                grid-template-columns: 1fr;
+            }}
+
+            .history-grid {{
+                grid-template-columns: 1fr;
             }}
 
             .report-card {{
-                align-items:
-                    flex-start;
+                align-items: flex-start;
 
-                flex-direction:
-                    column;
+                flex-direction: column;
             }}
 
             .report-actions {{
-                width:
-                    100%;
+                width: 100%;
             }}
 
             .report-actions a {{
-                flex:
-                    1;
+                flex: 1;
 
-                text-align:
-                    center;
+                text-align: center;
             }}
 
             .document-card {{
-                align-items:
-                    flex-start;
+                align-items: flex-start;
 
-                flex-direction:
-                    column;
+                flex-direction: column;
             }}
 
             .document-actions {{
-                width:
-                    100%;
+                width: 100%;
             }}
 
             .open-btn {{
-                flex:
-                    1;
+                display: block;
 
-                text-align:
-                    center;
+                text-align: center;
             }}
-
         }}
 
     </style>
@@ -1259,6 +1390,7 @@ def emergency_view(
 
 
 <body>
+
 
     <!-- =================================================
          HEADER
@@ -1283,6 +1415,7 @@ def emergency_view(
 
     <main class="container">
 
+
         <!-- =================================================
              WARNING
         ================================================= -->
@@ -1290,6 +1423,7 @@ def emergency_view(
         <div class="alert">
 
             ⚠️
+
             <strong>
                 Emergency read-only view.
             </strong>
@@ -1301,13 +1435,13 @@ def emergency_view(
 
 
         <!-- =================================================
-             PATIENT DETAILS
+             BASIC PATIENT INFORMATION
         ================================================= -->
 
         <section class="card">
 
             <h2 class="section-title">
-                👤 Patient Details
+                👤 Patient Information
             </h2>
 
 
@@ -1326,6 +1460,7 @@ def emergency_view(
                     <div class="card-id">
 
                         Health Card ID:
+
                         <strong>
                             {card_id}
                         </strong>
@@ -1338,6 +1473,72 @@ def emergency_view(
 
 
             <div class="details-grid">
+
+
+                <div class="detail">
+
+                    <div class="label">
+                        Date of Birth
+                    </div>
+
+                    <div class="value">
+                        {date_of_birth}
+                    </div>
+
+                </div>
+
+
+                <div class="detail">
+
+                    <div class="label">
+                        Age
+                    </div>
+
+                    <div class="value">
+                        {age}
+                    </div>
+
+                </div>
+
+
+                <div class="detail">
+
+                    <div class="label">
+                        Gender
+                    </div>
+
+                    <div class="value">
+                        {gender}
+                    </div>
+
+                </div>
+
+
+                <div class="detail">
+
+                    <div class="label">
+                        Mobile
+                    </div>
+
+                    <div class="value">
+                        {phone}
+                    </div>
+
+                </div>
+
+
+                <div class="detail">
+
+                    <div class="label">
+                        Email
+                    </div>
+
+                    <div class="value">
+                        {email}
+                    </div>
+
+                </div>
+
 
                 <div class="detail">
 
@@ -1355,6 +1556,45 @@ def emergency_view(
                 <div class="detail">
 
                     <div class="label">
+                        Height
+                    </div>
+
+                    <div class="value">
+                        {height}
+                    </div>
+
+                </div>
+
+
+                <div class="detail">
+
+                    <div class="label">
+                        Weight
+                    </div>
+
+                    <div class="value">
+                        {weight}
+                    </div>
+
+                </div>
+
+
+                <div class="detail">
+
+                    <div class="label">
+                        BMI
+                    </div>
+
+                    <div class="value">
+                        {bmi}
+                    </div>
+
+                </div>
+
+
+                <div class="detail">
+
+                    <div class="label">
                         Severe Allergies
                     </div>
 
@@ -1364,6 +1604,24 @@ def emergency_view(
 
                 </div>
 
+
+            </div>
+
+        </section>
+
+
+        <!-- =================================================
+             ADDRESS
+        ================================================= -->
+
+        <section class="card">
+
+            <h2 class="section-title">
+                🏠 Address
+            </h2>
+
+            <div class="address-box">
+                {address}
             </div>
 
         </section>
@@ -1386,21 +1644,132 @@ def emergency_view(
                 </div>
 
                 <div class="contact-line">
+
                     📱
+
                     <strong>
                         Phone:
                     </strong>
+
                     {emergency_phone}
+
                 </div>
 
+
                 <div class="contact-line">
+
                     👥
+
                     <strong>
                         Relation:
                     </strong>
+
                     {emergency_relation}
+
                 </div>
 
+            </div>
+
+        </section>
+
+
+        <!-- =================================================
+             MEDICAL HISTORY
+        ================================================= -->
+
+        <section class="card">
+
+            <h2 class="section-title">
+                🏥 Medical History
+            </h2>
+
+
+            <div class="history-grid">
+
+
+                <div class="history-box">
+
+                    <div class="history-title">
+                        🦠 Diseases / Conditions
+                    </div>
+
+                    {html_list(diseases)}
+
+                </div>
+
+
+                <div class="history-box">
+
+                    <div class="history-title">
+                        ⚠️ Allergies
+                    </div>
+
+                    {html_list(allergies)}
+
+                </div>
+
+
+                <div class="history-box">
+
+                    <div class="history-title">
+                        💊 Current Medications
+                    </div>
+
+                    {html_list(medications)}
+
+                </div>
+
+
+                <div class="history-box">
+
+                    <div class="history-title">
+                        🏥 Surgery History
+                    </div>
+
+                    {html_list(surgery_history)}
+
+                </div>
+
+
+                <div class="history-box">
+
+                    <div class="history-title">
+                        💉 Vaccination Records
+                    </div>
+
+                    {html_list(vaccination_records)}
+
+                </div>
+
+
+                <div class="history-box">
+
+                    <div class="history-title">
+                        🛡️ Insurance Details
+                    </div>
+
+                    {html_list(insurance_details)}
+
+                </div>
+
+
+            </div>
+
+        </section>
+
+
+        <!-- =================================================
+             MEDICAL NOTES
+        ================================================= -->
+
+        <section class="card">
+
+            <h2 class="section-title">
+                📝 Medical Notes
+            </h2>
+
+            <div class="address-box">
+                {medical_notes}
             </div>
 
         </section>
@@ -1443,11 +1812,14 @@ def emergency_view(
         <div class="footer">
 
             AI Universal Health Card
+
             • Emergency Read-Only Access
 
         </div>
 
+
     </main>
+
 
 </body>
 
@@ -1460,7 +1832,7 @@ def emergency_view(
 
 
 # =========================================================
-# VIEW MEDICAL PDF THROUGH EMERGENCY QR
+# VIEW MEDICAL PDF
 # =========================================================
 
 @router.get(
@@ -1520,6 +1892,7 @@ def emergency_view_report(
     )
 
     if not file_path.exists():
+
         raise HTTPException(
             status_code=404,
             detail="Stored medical report file not found",
@@ -1538,7 +1911,7 @@ def emergency_view_report(
 
 
 # =========================================================
-# DOWNLOAD MEDICAL REPORT THROUGH EMERGENCY QR
+# DOWNLOAD MEDICAL PDF
 # =========================================================
 
 @router.get(
@@ -1570,7 +1943,7 @@ def emergency_download_report(
         )
 
     # -----------------------------------------------------
-    # Find report belonging to QR patient
+    # Find report
     # -----------------------------------------------------
 
     report = (
@@ -1598,6 +1971,7 @@ def emergency_download_report(
     )
 
     if not file_path.exists():
+
         raise HTTPException(
             status_code=404,
             detail="Stored medical report file not found",
