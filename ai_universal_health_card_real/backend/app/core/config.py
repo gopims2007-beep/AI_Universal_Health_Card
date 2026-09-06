@@ -7,6 +7,9 @@ class Settings(BaseSettings):
 
     database_url: str
     jwt_secret: str
+    supabase_url: str
+    supabase_service_role_key: str
+    supabase_storage_bucket: str = "medical-reports"
 
     jwt_algorithm: str = "HS256"
     access_token_minutes: int = 30

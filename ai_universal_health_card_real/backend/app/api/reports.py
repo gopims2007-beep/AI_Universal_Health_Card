@@ -1,5 +1,3 @@
-from pathlib import Path
-
 from fastapi import (
     APIRouter,
     Depends,
@@ -8,7 +6,8 @@ from fastapi import (
     UploadFile,
     HTTPException,
 )
-from fastapi.responses import FileResponse
+from fastapi.responses import StreamingResponse
+from io import BytesIO
 from sqlalchemy.orm import Session
 
 from app.db.session import get_db
@@ -17,6 +16,11 @@ from app.core.deps import require_roles, get_current_user
 from app.core.config import settings
 from app.services.files import save_upload, extract_text
 from app.services.ai_analysis import analyze_report
+from app.services.storage import (
+    upload_report as upload_storage_report,
+    download_report as download_storage_report,
+    delete_report as delete_storage_report,
+)
 
 
 router = APIRouter(
@@ -74,7 +78,14 @@ async def upload_report(
         file.content_type,
     )
 
-    # Create MySQL record
+    upload_storage_report(
+        stored_filename,
+        file_path.read_bytes(),
+        file.content_type,
+    )
+    file_path.unlink(missing_ok=True)
+
+    # Create database record
     report = MedicalReport(
         patient_id=patient.id,
         uploaded_by_id=user.id,
@@ -191,21 +202,22 @@ def download_report(
             detail="Not authorized",
         )
 
-    file_path = (
-        Path(settings.upload_dir)
-        / report.stored_filename
-    )
-
-    if not file_path.exists():
+    try:
+        file_data = download_storage_report(report.stored_filename)
+    except Exception:
         raise HTTPException(
             status_code=404,
-            detail="Stored report file not found",
+            detail="Stored report file not found in Supabase Storage",
         )
 
-    return FileResponse(
-        path=file_path,
+    return StreamingResponse(
+        BytesIO(file_data),
         media_type=report.mime_type,
-        filename=report.original_filename,
+        headers={
+            "Content-Disposition": (
+                f'attachment; filename="{report.original_filename}"'
+            )
+        },
     )
 
 
@@ -296,12 +308,6 @@ def delete_report(
             detail="You are not authorized to delete this report",
         )
 
-    # Physical file path
-    file_path = (
-        Path(settings.upload_dir)
-        / report.stored_filename
-    )
-
     # Delete database record.
     #
     # MedicalReport.analyses has:
@@ -311,15 +317,13 @@ def delete_report(
     db.delete(report)
     db.commit()
 
-    # Delete physical file after DB deletion
-    if file_path.exists():
-        try:
-            file_path.unlink()
-        except OSError as error:
-            print(
-                "Warning: Database record deleted, "
-                f"but physical file could not be deleted: {error}"
-            )
+    try:
+        delete_storage_report(report.stored_filename)
+    except Exception as error:
+        print(
+            "Warning: Database record deleted, "
+            f"but Storage object could not be deleted: {error}"
+        )
 
     return {
         "message": "Medical report deleted successfully",

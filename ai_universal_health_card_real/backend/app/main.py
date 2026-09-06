@@ -28,6 +28,24 @@ from app.api import (
 
 Base.metadata.create_all(bind=engine)
 
+# Keep application tables inaccessible through Supabase's public API.
+with engine.begin() as connection:
+    for table_name in (
+        "users",
+        "patient_profiles",
+        "medical_history",
+        "medical_reports",
+        "ai_analyses",
+        "qr_codes",
+        "emergency_documents",
+        "consent_tokens",
+        "audit_logs",
+        "one_time_tokens",
+    ):
+        connection.exec_driver_sql(
+            f'ALTER TABLE "{table_name}" ENABLE ROW LEVEL SECURITY'
+        )
+
 
 # =========================================================
 # FASTAPI APPLICATION

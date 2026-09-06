@@ -29,3 +29,4 @@ joblib==1.5.1
 
 python-dateutil==2.9.0.post0
 psycopg[binary]==3.3.5
+supabase==2.18.1

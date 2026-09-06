@@ -1,7 +1,7 @@
-from pathlib import Path
+from io import BytesIO
 
 from fastapi import APIRouter, Depends, HTTPException
-from fastapi.responses import FileResponse
+from fastapi.responses import StreamingResponse
 from sqlalchemy.orm import Session
 
 from app.db.session import get_db
@@ -13,6 +13,7 @@ from app.db.models import (
     MedicalReport,
 )
 from app.core.config import settings
+from app.services.storage import download_report as download_storage_report
 
 
 router = APIRouter(tags=["Emergency QR Access"])
@@ -198,26 +199,26 @@ def emergency_view_report(
     # Physical file
     # -----------------------------------------------------
 
-    file_path = (
-        Path(settings.upload_dir)
-        / report.stored_filename
-    )
-
-    if not file_path.exists():
+    try:
+        file_data = download_storage_report(report.stored_filename)
+    except Exception:
         raise HTTPException(
             status_code=404,
-            detail="Stored medical report file not found",
+            detail="Stored medical report file not found in Supabase Storage",
         )
 
     # -----------------------------------------------------
     # Browser view
     # -----------------------------------------------------
 
-    return FileResponse(
-        path=file_path,
+    return StreamingResponse(
+        BytesIO(file_data),
         media_type=report.mime_type,
-        filename=report.original_filename,
-        content_disposition_type="inline",
+        headers={
+            "Content-Disposition": (
+                f'inline; filename="{report.original_filename}"'
+            )
+        },
     )
 
 
@@ -276,24 +277,24 @@ def emergency_download_report(
     # Physical file
     # -----------------------------------------------------
 
-    file_path = (
-        Path(settings.upload_dir)
-        / report.stored_filename
-    )
-
-    if not file_path.exists():
+    try:
+        file_data = download_storage_report(report.stored_filename)
+    except Exception:
         raise HTTPException(
             status_code=404,
-            detail="Stored medical report file not found",
+            detail="Stored medical report file not found in Supabase Storage",
         )
 
     # -----------------------------------------------------
     # Force download
     # -----------------------------------------------------
 
-    return FileResponse(
-        path=file_path,
+    return StreamingResponse(
+        BytesIO(file_data),
         media_type=report.mime_type,
-        filename=report.original_filename,
-        content_disposition_type="attachment",
+        headers={
+            "Content-Disposition": (
+                f'attachment; filename="{report.original_filename}"'
+            )
+        },
     )
