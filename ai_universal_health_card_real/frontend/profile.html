@@ -19,61 +19,59 @@
         color: #172b4d;
       }
 
-      /* HEADER */
+      /* =========================
+         HEADER
+      ========================= */
 
       .header {
-        height: 60px;
-
+        min-height: 60px;
         background: #0d6efd;
-
         color: white;
 
         display: flex;
-
         align-items: center;
-
         justify-content: space-between;
 
-        padding: 0 8%;
+        padding: 10px 8%;
       }
 
       .logo {
         font-size: 21px;
-
         font-weight: bold;
       }
 
       .header-buttons {
         display: flex;
-
         gap: 10px;
       }
 
       .header-btn {
         background: white;
-
         color: #0d6efd;
 
         border: none;
-
         padding: 9px 16px;
 
         border-radius: 5px;
-
         cursor: pointer;
+
+        font-weight: bold;
       }
 
-      /* CONTAINER */
+      /* =========================
+         CONTAINER
+      ========================= */
 
       .container {
         width: 90%;
-
         max-width: 850px;
 
         margin: 40px auto;
       }
 
-      /* CARD */
+      /* =========================
+         CARD
+      ========================= */
 
       .card {
         background: white;
@@ -87,7 +85,6 @@
 
       h1 {
         margin-top: 0;
-
         text-align: center;
 
         color: #172b4d;
@@ -101,7 +98,9 @@
         margin-bottom: 30px;
       }
 
-      /* FORM */
+      /* =========================
+         FORM
+      ========================= */
 
       .row {
         display: flex;
@@ -139,6 +138,8 @@
         font-size: 15px;
 
         outline: none;
+
+        background: white;
       }
 
       textarea {
@@ -155,7 +156,9 @@
         box-shadow: 0 0 0 2px rgba(13, 110, 253, 0.1);
       }
 
-      /* PATIENT ID */
+      /* =========================
+         PATIENT ID
+      ========================= */
 
       .patient-id {
         background: #eef5ff;
@@ -171,7 +174,9 @@
         color: #084298;
       }
 
-      /* BMI */
+      /* =========================
+         BMI
+      ========================= */
 
       .bmi-box {
         background: #f8f9fa;
@@ -199,7 +204,9 @@
         font-weight: bold;
       }
 
-      /* BUTTONS */
+      /* =========================
+         BUTTONS
+      ========================= */
 
       .buttons {
         display: flex;
@@ -229,6 +236,12 @@
         cursor: pointer;
       }
 
+      .save-btn:disabled {
+        opacity: 0.6;
+
+        cursor: not-allowed;
+      }
+
       .cancel-btn {
         flex: 1;
 
@@ -247,6 +260,10 @@
         cursor: pointer;
       }
 
+      /* =========================
+         MESSAGE
+      ========================= */
+
       .message {
         display: none;
 
@@ -261,7 +278,23 @@
         font-weight: bold;
       }
 
-      /* MOBILE */
+      /* =========================
+         LOADING
+      ========================= */
+
+      .loading {
+        text-align: center;
+
+        padding: 10px;
+
+        color: #666;
+
+        display: none;
+      }
+
+      /* =========================
+         MOBILE
+      ========================= */
 
       @media (max-width: 650px) {
         .row {
@@ -271,22 +304,40 @@
         }
 
         .card {
-          padding: 25px;
+          padding: 25px 20px;
         }
 
         .header {
-          padding: 0 5%;
+          padding: 10px 5%;
+
+          gap: 10px;
         }
 
         .logo {
           font-size: 17px;
+        }
+
+        .header-buttons {
+          gap: 5px;
+        }
+
+        .header-btn {
+          padding: 8px 10px;
+
+          font-size: 12px;
+        }
+
+        .buttons {
+          flex-direction: column;
         }
       }
     </style>
   </head>
 
   <body>
-    <!-- HEADER -->
+    <!-- =========================
+         HEADER
+    ========================= -->
 
     <header class="header">
       <div class="logo">AI Universal Health Card</div>
@@ -298,7 +349,9 @@
       </div>
     </header>
 
-    <!-- MAIN -->
+    <!-- =========================
+         MAIN
+    ========================= -->
 
     <main class="container">
       <div class="card">
@@ -314,8 +367,16 @@
           <span id="patientId"> Loading... </span>
         </div>
 
+        <!-- LOADING -->
+
+        <div id="loading" class="loading">Loading profile from database...</div>
+
+        <!-- =========================
+             PROFILE FORM
+        ========================= -->
+
         <form id="profileForm">
-          <!-- NAME -->
+          <!-- FULL NAME -->
 
           <div class="form-group">
             <label> Full Name </label>
@@ -445,8 +506,10 @@
           <div class="form-group">
             <label> Address </label>
 
-            <textarea id="address" placeholder="Enter your full address">
-            </textarea>
+            <textarea
+              id="address"
+              placeholder="Enter your full address"
+            ></textarea>
           </div>
 
           <!-- EMERGENCY CONTACT -->
@@ -478,12 +541,16 @@
           <!-- BUTTONS -->
 
           <div class="buttons">
-            <button type="submit" class="save-btn">Save Profile</button>
+            <button type="submit" class="save-btn" id="saveButton">
+              Save Profile
+            </button>
 
             <button type="button" class="cancel-btn" onclick="goDashboard()">
               Cancel
             </button>
           </div>
+
+          <!-- MESSAGE -->
 
           <div id="message" class="message"></div>
         </form>
@@ -491,9 +558,9 @@
     </main>
 
     <script>
-      /* =========================
-           LOGIN CHECK
-        ========================= */
+      /* ==================================================
+         LOGIN CHECK
+      ================================================== */
 
       const isLoggedIn = localStorage.getItem("isLoggedIn");
 
@@ -501,21 +568,23 @@
         window.location.href = "login.html";
       }
 
-      /* =========================
-           LOAD PATIENT
-        ========================= */
+      /* ==================================================
+         GET AUTH TOKEN
+      ================================================== */
 
-      let patient = JSON.parse(localStorage.getItem("patientData"));
-
-      if (!patient) {
-        alert("Patient data not found. Please register.");
-
-        window.location.href = "register.html";
+      function getAccessToken() {
+        return (
+          localStorage.getItem("access_token") ||
+          localStorage.getItem("accessToken") ||
+          localStorage.getItem("token") ||
+          localStorage.getItem("authToken") ||
+          ""
+        );
       }
 
-      /* =========================
-           GET ELEMENTS
-        ========================= */
+      /* ==================================================
+         GET HTML ELEMENTS
+      ================================================== */
 
       const patientId = document.getElementById("patientId");
 
@@ -545,44 +614,42 @@
 
       const emergencyPhone = document.getElementById("emergencyPhone");
 
-      /* =========================
-           LOAD EXISTING DATA
-        ========================= */
+      const message = document.getElementById("message");
 
-      patientId.innerText = patient.patientId || "N/A";
+      const loading = document.getElementById("loading");
 
-      name.value = patient.name || "";
+      const saveButton = document.getElementById("saveButton");
 
-      dob.value = patient.dob || "";
+      /* ==================================================
+         SHOW MESSAGE
+      ================================================== */
 
-      gender.value = patient.gender || "";
+      function showMessage(text, success) {
+        message.style.display = "block";
 
-      bloodGroup.value = patient.bloodGroup || "";
+        message.innerText = text;
 
-      mobile.value = patient.mobile || "";
+        if (success) {
+          message.style.background = "#d1e7dd";
 
-      email.value = patient.email || "";
+          message.style.color = "#0f5132";
+        } else {
+          message.style.background = "#ffe5e5";
 
-      height.value = patient.height || "";
+          message.style.color = "#b00020";
+        }
+      }
 
-      weight.value = patient.weight || "";
-
-      address.value = patient.address || "";
-
-      emergencyName.value = patient.emergencyName || "";
-
-      emergencyPhone.value = patient.emergencyPhone || "";
-
-      /* =========================
-           BMI CALCULATION
-        ========================= */
+      /* ==================================================
+         CALCULATE BMI
+      ================================================== */
 
       function calculateBMI() {
         const h = parseFloat(height.value);
 
         const w = parseFloat(weight.value);
 
-        if (!h || !w || h <= 0) {
+        if (!h || !w || h <= 0 || w <= 0) {
           bmi.innerText = "--";
 
           bmiStatus.innerText = "";
@@ -611,30 +678,205 @@
 
       weight.addEventListener("input", calculateBMI);
 
-      calculateBMI();
+      /* ==================================================
+         SAVE LOCAL STORAGE BACKUP
+      ================================================== */
 
-      /* =========================
-           SAVE PROFILE
-        ========================= */
+      function saveLocalBackup() {
+        const patient = JSON.parse(localStorage.getItem("patientData")) || {};
+
+        patient.patientId = patientId.innerText;
+
+        patient.name = name.value.trim();
+
+        patient.dob = dob.value;
+
+        patient.gender = gender.value;
+
+        patient.bloodGroup = bloodGroup.value;
+
+        patient.mobile = mobile.value.trim();
+
+        patient.email = email.value.trim();
+
+        patient.height = height.value;
+
+        patient.weight = weight.value;
+
+        patient.bmi = bmi.innerText === "--" ? "" : bmi.innerText;
+
+        patient.address = address.value.trim();
+
+        patient.emergencyName = emergencyName.value.trim();
+
+        patient.emergencyPhone = emergencyPhone.value.trim();
+
+        localStorage.setItem("patientData", JSON.stringify(patient));
+      }
+
+      /* ==================================================
+         LOAD PROFILE FROM DATABASE
+      ================================================== */
+
+      async function loadProfile() {
+        const token = getAccessToken();
+
+        if (!token) {
+          showMessage("Login token not found. Please login again.", false);
+
+          return;
+        }
+
+        loading.style.display = "block";
+
+        try {
+          const response = await fetch("/api/patient/profile", {
+            method: "GET",
+
+            headers: {
+              Authorization: "Bearer " + token,
+
+              "Content-Type": "application/json",
+            },
+
+            credentials: "include",
+          });
+
+          const result = await response.json();
+
+          console.log("Profile API response:", result);
+
+          if (!response.ok) {
+            showMessage(result.detail || "Unable to load profile.", false);
+
+            return;
+          }
+
+          /* ==========================================
+             BACKEND RESPONSE
+
+             {
+               user: {...},
+               profile: {...}
+             }
+          ========================================== */
+
+          const user = result.user || {};
+
+          const profile = result.profile || {};
+
+          /* ==========================================
+             PATIENT ID
+          ========================================== */
+
+          patientId.innerText = profile.card_id || user.id || "N/A";
+
+          /* ==========================================
+             USER DATA
+          ========================================== */
+
+          name.value = user.full_name || "";
+
+          mobile.value = user.phone || "";
+
+          email.value = user.email || "";
+
+          /* ==========================================
+             PROFILE DATA
+          ========================================== */
+
+          dob.value = formatDateForInput(profile.date_of_birth);
+
+          gender.value = profile.gender || "";
+
+          bloodGroup.value = profile.blood_group || "";
+
+          height.value = profile.height_cm ?? "";
+
+          weight.value = profile.weight_kg ?? "";
+
+          address.value = profile.address || "";
+
+          emergencyName.value = profile.emergency_contact_name || "";
+
+          emergencyPhone.value = profile.emergency_contact_phone || "";
+
+          /* ==========================================
+             BMI
+          ========================================== */
+
+          calculateBMI();
+
+          /* ==========================================
+             LOCAL STORAGE BACKUP
+          ========================================== */
+
+          saveLocalBackup();
+        } catch (error) {
+          console.error("Load profile error:", error);
+
+          showMessage("Cannot connect to backend server.", false);
+        } finally {
+          loading.style.display = "none";
+        }
+      }
+
+      /* ==================================================
+         DATE FORMAT
+      ================================================== */
+
+      function formatDateForInput(value) {
+        if (!value) {
+          return "";
+        }
+
+        /* If already YYYY-MM-DD */
+
+        if (typeof value === "string" && /^\d{4}-\d{2}-\d{2}$/.test(value)) {
+          return value;
+        }
+
+        const date = new Date(value);
+
+        if (Number.isNaN(date.getTime())) {
+          return "";
+        }
+
+        const year = date.getFullYear().toString().padStart(4, "0");
+
+        const month = (date.getMonth() + 1).toString().padStart(2, "0");
+
+        const day = date.getDate().toString().padStart(2, "0");
+
+        return year + "-" + month + "-" + day;
+      }
+
+      /* ==================================================
+         UPDATE PROFILE DATABASE
+      ================================================== */
 
       document
         .getElementById("profileForm")
-        .addEventListener("submit", function (event) {
+        .addEventListener("submit", async function (event) {
           event.preventDefault();
 
-          /* MOBILE VALIDATION */
+          /* ==========================================
+               MOBILE VALIDATION
+            ========================================== */
 
-          if (!/^[0-9]{10}$/.test(mobile.value)) {
+          if (!/^[0-9]{10}$/.test(mobile.value.trim())) {
             showMessage("Please enter a valid 10 digit mobile number.", false);
 
             return;
           }
 
-          /* EMERGENCY NUMBER */
+          /* ==========================================
+               EMERGENCY NUMBER VALIDATION
+            ========================================== */
 
           if (
-            emergencyPhone.value &&
-            !/^[0-9]{10}$/.test(emergencyPhone.value)
+            emergencyPhone.value.trim() &&
+            !/^[0-9]{10}$/.test(emergencyPhone.value.trim())
           ) {
             showMessage(
               "Please enter a valid emergency contact number.",
@@ -644,90 +886,165 @@
             return;
           }
 
-          /* BMI */
+          /* ==========================================
+               AUTH TOKEN
+            ========================================== */
+
+          const token = getAccessToken();
+
+          if (!token) {
+            showMessage("Login session expired. Please login again.", false);
+
+            return;
+          }
+
+          /* ==========================================
+               HEIGHT + WEIGHT
+            ========================================== */
 
           const h = parseFloat(height.value);
 
           const w = parseFloat(weight.value);
 
-          let bmiValue = "";
+          /* ==========================================
+               BACKEND DATA
 
-          if (h && w) {
-            bmiValue = (w / Math.pow(h / 100, 2)).toFixed(1);
+               IMPORTANT:
+               These names MUST match
+               PatientProfile model.
+            ========================================== */
+
+          const profileData = {
+            date_of_birth: dob.value || null,
+
+            gender: gender.value || null,
+
+            blood_group: bloodGroup.value || null,
+
+            height_cm: Number.isFinite(h) ? h : null,
+
+            weight_kg: Number.isFinite(w) ? w : null,
+
+            address: address.value.trim() || null,
+
+            emergency_contact_name: emergencyName.value.trim() || null,
+
+            emergency_contact_phone: emergencyPhone.value.trim() || null,
+          };
+
+          console.log("Sending profile data:", profileData);
+
+          /* ==========================================
+               DISABLE BUTTON
+            ========================================== */
+
+          saveButton.disabled = true;
+
+          saveButton.innerText = "Saving...";
+
+          try {
+            /* ========================================
+                 PUT DATABASE UPDATE
+              ======================================== */
+
+            const response = await fetch("/api/patient/profile", {
+              method: "PUT",
+
+              headers: {
+                Authorization: "Bearer " + token,
+
+                "Content-Type": "application/json",
+              },
+
+              credentials: "include",
+
+              body: JSON.stringify(profileData),
+            });
+
+            const result = await response.json();
+
+            console.log("Update profile response:", result);
+
+            /* ========================================
+                 ERROR
+              ======================================== */
+
+            if (!response.ok) {
+              showMessage(result.detail || "Profile update failed.", false);
+
+              return;
+            }
+
+            /* ========================================
+                 UPDATE LOCAL STORAGE BACKUP
+              ======================================== */
+
+            saveLocalBackup();
+
+            /* ========================================
+                 SUCCESS
+              ======================================== */
+
+            showMessage("Profile updated successfully in database!", true);
+
+            /* ========================================
+                 CALCULATE BMI
+              ======================================== */
+
+            calculateBMI();
+
+            /* ========================================
+                 RELOAD DATABASE DATA
+
+                 This confirms that the
+                 values were actually saved.
+              ======================================== */
+
+            await loadProfile();
+          } catch (error) {
+            console.error("Profile update error:", error);
+
+            showMessage("Cannot connect to backend server.", false);
+          } finally {
+            saveButton.disabled = false;
+
+            saveButton.innerText = "Save Profile";
           }
-
-          /* UPDATE DATA */
-
-          patient.name = name.value.trim();
-
-          patient.dob = dob.value;
-
-          patient.gender = gender.value;
-
-          patient.bloodGroup = bloodGroup.value;
-
-          patient.mobile = mobile.value.trim();
-
-          patient.email = email.value.trim();
-
-          patient.height = height.value;
-
-          patient.weight = weight.value;
-
-          patient.bmi = bmiValue;
-
-          patient.address = address.value.trim();
-
-          patient.emergencyName = emergencyName.value.trim();
-
-          patient.emergencyPhone = emergencyPhone.value.trim();
-
-          /* SAVE */
-
-          localStorage.setItem("patientData", JSON.stringify(patient));
-
-          showMessage("Profile updated successfully!", true);
         });
 
-      /* =========================
-           MESSAGE
-        ========================= */
-
-      function showMessage(text, success) {
-        const message = document.getElementById("message");
-
-        message.style.display = "block";
-
-        message.innerText = text;
-
-        if (success) {
-          message.style.background = "#d1e7dd";
-
-          message.style.color = "#0f5132";
-        } else {
-          message.style.background = "#ffe5e5";
-
-          message.style.color = "#b00020";
-        }
-      }
-
-      /* =========================
-           DASHBOARD
-        ========================= */
+      /* ==================================================
+         DASHBOARD
+      ================================================== */
 
       function goDashboard() {
         window.location.href = "dashboard.html";
       }
 
-      /* =========================
-           LOGOUT
-        ========================= */
+      /* ==================================================
+         LOGOUT
+      ================================================== */
 
       function logout() {
         localStorage.removeItem("isLoggedIn");
 
+        localStorage.removeItem("access_token");
+
+        localStorage.removeItem("accessToken");
+
+        localStorage.removeItem("token");
+
+        localStorage.removeItem("authToken");
+
         window.location.href = "index.html";
       }
+
+      /* ==================================================
+         PAGE LOAD
+      ================================================== */
+
+      document.addEventListener("DOMContentLoaded", function () {
+        loadProfile();
+      });
     </script>
   </body>
 </html>
