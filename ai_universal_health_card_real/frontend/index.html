@@ -2,178 +2,474 @@
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
-
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-
+    <meta name="theme-color" content="#071a25" />
     <title>AI Universal Health Card</title>
-
     <style>
+      :root {
+        --ink: #f4fbfa;
+        --muted: #b8d0ce;
+        --cyan: #6ee7db;
+        --navy: #071a25;
+        --glass: rgba(7, 31, 42, 0.62);
+        --line: rgba(205, 255, 247, 0.24);
+      }
+
       * {
-        margin: 0;
-        padding: 0;
         box-sizing: border-box;
+        margin: 0;
       }
-
-      html,
+      html {
+        scroll-behavior: smooth;
+      }
       body {
-        width: 100%;
-        height: 100%;
-        font-family: Arial, sans-serif;
-        background: white;
-        overflow: hidden;
+        min-width: 320px;
+        overflow-x: hidden;
+        background: var(--navy);
+        color: var(--ink);
+        font-family: Georgia, "Times New Roman", serif;
+      }
+      a {
+        color: inherit;
       }
 
-      /* =========================
-       HEADER
-    ========================== */
-
-      .header {
-        width: 100%;
-        height: 65px;
-
-        background: #0d6efd;
-
+      .site-header {
+        position: absolute;
+        inset: 0 0 auto;
+        z-index: 10;
         display: flex;
         align-items: center;
         justify-content: space-between;
-
-        padding: 0 7%;
-
-        position: relative;
-        z-index: 10;
+        width: min(1180px, calc(100% - 48px));
+        height: 88px;
+        margin: auto;
+        border-bottom: 1px solid rgba(255, 255, 255, 0.16);
       }
-
-      .logo {
-        color: white;
-        font-size: 22px;
-        font-weight: bold;
+      .brand {
+        display: inline-flex;
+        align-items: center;
+        gap: 12px;
+        color: var(--ink);
+        font-family: "Trebuchet MS", sans-serif;
+        font-size: 13px;
+        font-weight: 700;
+        letter-spacing: 0.16em;
+        text-decoration: none;
+        text-transform: uppercase;
       }
-
-      .buttons {
+      .brand-mark {
+        display: grid;
+        width: 38px;
+        height: 38px;
+        place-items: center;
+        border: 1px solid var(--cyan);
+        border-radius: 50%;
+        color: var(--cyan);
+        font-size: 19px;
+        box-shadow: 0 0 24px rgba(110, 231, 219, 0.3);
+      }
+      .actions {
         display: flex;
         gap: 10px;
       }
-
-      button {
-        cursor: pointer;
-        font-size: 14px;
-        border-radius: 6px;
-        padding: 10px 18px;
+      .action {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        min-width: 102px;
+        padding: 12px 18px;
+        border: 1px solid var(--line);
+        border-radius: 3px;
+        font-family: "Trebuchet MS", sans-serif;
+        font-size: 11px;
+        font-weight: 700;
+        letter-spacing: 0.16em;
+        text-decoration: none;
+        text-transform: uppercase;
+        transition:
+          transform 180ms ease,
+          background 180ms ease,
+          color 180ms ease;
+      }
+      .action:hover {
+        transform: translateY(-2px);
+      }
+      .action-login {
+        background: rgba(255, 255, 255, 0.06);
+      }
+      .action-register {
+        border-color: var(--cyan);
+        background: var(--cyan);
+        color: #062029;
+      }
+      .action-register:hover {
+        background: #b4fff5;
       }
 
-      .login-btn {
-        background: white;
-        color: #0d6efd;
-        border: none;
+      .hero {
+        position: relative;
+        display: grid;
+        min-height: 100vh;
+        align-items: center;
+        isolation: isolate;
+        overflow: hidden;
+        background:
+          linear-gradient(
+            90deg,
+            rgba(4, 19, 27, 0.95) 0%,
+            rgba(4, 20, 28, 0.78) 46%,
+            rgba(4, 21, 28, 0.28) 100%
+          ),
+          url("hospital.jpg") center / cover no-repeat;
+      }
+      .hero::after {
+        position: absolute;
+        inset: 0;
+        z-index: -1;
+        background: linear-gradient(180deg, transparent 55%, var(--navy) 100%);
+        content: "";
+      }
+      .hero-inner {
+        position: relative;
+        z-index: 2;
+        width: min(1180px, calc(100% - 48px));
+        margin: 0 auto;
+        padding-top: 74px;
+      }
+      .eyebrow {
+        margin-bottom: 24px;
+        color: var(--cyan);
+        font-family: "Trebuchet MS", sans-serif;
+        font-size: 11px;
+        font-weight: 700;
+        letter-spacing: 0.32em;
+        text-transform: uppercase;
+      }
+      h1 {
+        max-width: 680px;
+        font-size: clamp(3.4rem, 8vw, 7.5rem);
+        font-weight: 400;
+        letter-spacing: -0.055em;
+        line-height: 0.9;
+      }
+      .hero-copy {
+        max-width: 480px;
+        margin-top: 30px;
+        color: var(--muted);
+        font-size: 18px;
+        line-height: 1.7;
       }
 
-      .register-btn {
-        background: transparent;
-        color: white;
-        border: 1px solid white;
+      .glass-card {
+        position: absolute;
+        top: 24%;
+        right: max(6%, calc((100% - 1180px) / 2));
+        width: 285px;
+        padding: 24px;
+        border: 1px solid var(--line);
+        border-radius: 8px;
+        background: var(--glass);
+        box-shadow:
+          0 22px 80px rgba(0, 0, 0, 0.35),
+          inset 0 1px rgba(255, 255, 255, 0.14);
+        backdrop-filter: blur(18px);
+        animation: drift 6s ease-in-out infinite;
+      }
+      .card-label {
+        margin-bottom: 24px;
+        color: var(--cyan);
+        font-family: "Trebuchet MS", sans-serif;
+        font-size: 10px;
+        font-weight: 700;
+        letter-spacing: 0.2em;
+        text-transform: uppercase;
+      }
+      .card-pulse {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        margin-bottom: 20px;
+        font-family: "Trebuchet MS", sans-serif;
+        font-size: 12px;
+      }
+      .pulse-dot {
+        width: 8px;
+        height: 8px;
+        border-radius: 50%;
+        background: var(--cyan);
+        box-shadow: 0 0 14px var(--cyan);
+      }
+      .card-rule {
+        height: 1px;
+        margin: 16px 0;
+        background: var(--line);
+      }
+      .card-foot {
+        display: flex;
+        justify-content: space-between;
+        color: var(--muted);
+        font-family: "Trebuchet MS", sans-serif;
+        font-size: 10px;
+        letter-spacing: 0.1em;
+        text-transform: uppercase;
+      }
+      .card-foot strong {
+        color: var(--cyan);
       }
 
-      .login-btn:hover {
-        background: #eaf2ff;
+      .ambulance,
+      .person {
+        position: absolute;
+        z-index: 1;
+        user-select: none;
+      }
+      .ambulance {
+        bottom: 13%;
+        left: -100px;
+        font-size: 64px;
+        animation: drive 14s linear infinite;
+      }
+      .person {
+        bottom: 12%;
+        font-size: 39px;
+        animation: bob 4s ease-in-out infinite;
+      }
+      .person-one {
+        right: 36%;
+      }
+      .person-two {
+        right: 30%;
+        animation-delay: -1.3s;
+      }
+      .person-three {
+        right: 24%;
+        animation-delay: -2.4s;
       }
 
-      .register-btn:hover {
-        background: white;
-        color: #0d6efd;
+      .ecg {
+        position: absolute;
+        right: 0;
+        bottom: 32px;
+        width: min(510px, 45vw);
+        height: 70px;
+        overflow: hidden;
+        opacity: 0.78;
+      }
+      .ecg-line {
+        width: 1020px;
+        height: 70px;
+        background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='1020' height='70'%3E%3Cpolyline points='0,35 100,35 125,35 145,7 165,63 185,35 300,35 330,35 350,16 365,54 380,35 500,35 530,35 550,5 570,65 590,35 700,35 730,35 750,12 770,58 790,35 1020,35' fill='none' stroke='%236ee7db' stroke-width='3'/%3E%3C/svg%3E")
+          repeat-x;
+        animation: ecgMove 3.8s linear infinite;
       }
 
-      /* =========================
-       HOSPITAL IMAGE
-       FULL SCREEN
-       NO WHITE SPACE
-    ========================== */
-
-      .hospital-section {
-        width: 100%;
-        height: calc(100vh - 65px);
-
-        background-image: url("hospital.jpg");
-
-        /* Full image area */
-        background-size: 100% 100%;
-
-        background-position: center;
-        background-repeat: no-repeat;
+      .reveal-section {
+        padding: 120px 24px 150px;
+        background: var(--navy);
+        text-align: center;
+      }
+      .reveal-section > div {
+        max-width: 650px;
+        margin: auto;
+      }
+      .reveal-section h2 {
+        margin-bottom: 20px;
+        font-size: clamp(2.5rem, 6vw, 5.5rem);
+        font-weight: 400;
+        letter-spacing: -0.05em;
+        line-height: 0.95;
+      }
+      .reveal-section p {
+        color: var(--muted);
+        font-size: 17px;
+        line-height: 1.8;
+      }
+      .reveal {
+        opacity: 0;
+        transform: translateY(38px);
+        transition:
+          opacity 800ms ease,
+          transform 800ms ease;
+      }
+      .reveal.visible {
+        opacity: 1;
+        transform: translateY(0);
       }
 
-      /* =========================
-       MOBILE
-    ========================== */
-
-      @media (max-width: 700px) {
-        .header {
-          height: 60px;
-          padding: 0 5%;
+      @keyframes drive {
+        from {
+          transform: translateX(0);
         }
-
-        .logo {
-          font-size: 17px;
+        to {
+          transform: translateX(calc(100vw + 180px));
         }
-
-        .buttons {
-          gap: 6px;
+      }
+      @keyframes bob {
+        0%,
+        100% {
+          transform: translateY(0);
         }
-
-        button {
-          padding: 8px 11px;
-          font-size: 12px;
+        50% {
+          transform: translateY(-17px);
         }
+      }
+      @keyframes drift {
+        0%,
+        100% {
+          transform: translateY(0) rotate(1deg);
+        }
+        50% {
+          transform: translateY(-14px) rotate(-1deg);
+        }
+      }
+      @keyframes ecgMove {
+        from {
+          transform: translateX(0);
+        }
+        to {
+          transform: translateX(-300px);
+        }
+      }
 
-        .hospital-section {
-          width: 100%;
-          height: calc(100vh - 60px);
-
-          background-image: url("hospital.jpg");
-
-          /* Mobile-லயும் full screen */
-          background-size: 100% 100%;
-
-          background-position: center;
-          background-repeat: no-repeat;
+      @media (max-width: 760px) {
+        .site-header {
+          width: calc(100% - 32px);
+          height: 72px;
+        }
+        .brand {
+          font-size: 10px;
+          letter-spacing: 0.1em;
+        }
+        .brand-mark {
+          width: 32px;
+          height: 32px;
+          font-size: 15px;
+        }
+        .action {
+          min-width: 78px;
+          padding: 10px 11px;
+          font-size: 9px;
+        }
+        .hero-inner {
+          width: calc(100% - 32px);
+          padding-top: 100px;
+        }
+        .hero-copy {
+          max-width: 350px;
+          font-size: 16px;
+        }
+        .glass-card {
+          top: auto;
+          right: 16px;
+          bottom: 112px;
+          width: 220px;
+          padding: 17px;
+        }
+        .card-label {
+          margin-bottom: 15px;
+        }
+        .card-rule {
+          margin: 10px 0;
+        }
+        .person {
+          bottom: 20%;
+          font-size: 28px;
+        }
+        .person-one {
+          right: 34%;
+        }
+        .person-two {
+          right: 22%;
+        }
+        .person-three {
+          right: 10%;
+        }
+        .ambulance {
+          bottom: 8%;
+          font-size: 46px;
+        }
+        .ecg {
+          bottom: 20px;
+          width: 250px;
+        }
+      }
+      @media (prefers-reduced-motion: reduce) {
+        *,
+        *::before,
+        *::after {
+          animation-duration: 0.01ms !important;
+          scroll-behavior: auto !important;
+          transition-duration: 0.01ms !important;
         }
       }
     </style>
   </head>
-
   <body>
-    <!-- =========================
-       HEADER
-  ========================== -->
-
-    <header class="header">
-      <div class="logo">AI Universal Health Card</div>
-
-      <div class="buttons">
-        <button class="login-btn" onclick="goToLogin()">Login</button>
-
-        <button class="register-btn" onclick="goToRegister()">Register</button>
-      </div>
+    <header class="site-header">
+      <a
+        class="brand"
+        href="index.html"
+        aria-label="AI Universal Health Card home"
+      >
+        <span class="brand-mark">+</span>
+        <span>AI Universal<br />Health Card</span>
+      </a>
+      <nav class="actions" aria-label="Account access">
+        <a class="action action-login" href="login.html">Login</a>
+        <a class="action action-register" href="register.html">Register</a>
+      </nav>
     </header>
 
-    <!-- =========================
-       HOSPITAL BACKGROUND
-       NO TEXT OVER IMAGE
-  ========================== -->
-
-    <section class="hospital-section"></section>
-
-    <!-- =========================
-       JAVASCRIPT
-  ========================== -->
+    <main>
+      <section class="hero" aria-labelledby="hero-title">
+        <div class="hero-inner">
+          <p class="eyebrow">A calmer way forward</p>
+          <h1 id="hero-title">Healthcare,<br /><em>connected.</em></h1>
+          <p class="hero-copy">
+            A secure digital health identity designed to keep the moments that
+            matter close at hand.
+          </p>
+        </div>
+        <aside class="glass-card" aria-label="Secure health identity preview">
+          <p class="card-label">Health identity</p>
+          <p class="card-pulse">
+            <span class="pulse-dot"></span> Connected and ready
+          </p>
+          <div class="card-rule"></div>
+          <div class="card-foot">
+            <span>Protected</span><strong>Active</strong>
+          </div>
+        </aside>
+        <div class="ambulance" aria-hidden="true">🚑</div>
+        <div class="person person-one" aria-hidden="true">👩‍⚕️</div>
+        <div class="person person-two" aria-hidden="true">👨‍⚕️</div>
+        <div class="person person-three" aria-hidden="true">🧑</div>
+        <div class="ecg" aria-hidden="true"><div class="ecg-line"></div></div>
+      </section>
+      <section class="reveal-section">
+        <div class="reveal">
+          <p class="eyebrow">Designed around you</p>
+          <h2>One identity.<br /><em>More peace of mind.</em></h2>
+          <p>
+            Simple access, thoughtful design, and a clearer way to carry your
+            essential health identity wherever life takes you.
+          </p>
+        </div>
+      </section>
+    </main>
 
     <script>
-      function goToLogin() {
-        window.location.href = "login.html";
-      }
-
-      function goToRegister() {
-        window.location.href = "register.html";
-      }
+      const reveal = document.querySelector(".reveal");
+      const observer = new IntersectionObserver(
+        ([entry]) => {
+          if (entry.isIntersecting) {
+            entry.target.classList.add("visible");
+            observer.disconnect();
+          }
+        },
+        { threshold: 0.2 },
+      );
+      observer.observe(reveal);
     </script>
   </body>
 </html>
