@@ -240,19 +240,19 @@
         <div class="add-section">
           <h2>➕ Add Medical History</h2>
 
-          <label> Disease / Condition </label>
+          <label>Disease / Condition</label>
 
           <input type="text" id="disease" placeholder="Example: Diabetes" />
 
-          <label> Diagnosis Date </label>
+          <label>Diagnosis Date</label>
 
           <input type="date" id="diagnosisDate" />
 
-          <label> Treatment / Medication </label>
+          <label>Treatment / Medication</label>
 
           <input type="text" id="treatment" placeholder="Example: Tablets" />
 
-          <label> Additional Notes </label>
+          <label>Additional Notes</label>
 
           <textarea
             id="notes"
@@ -273,14 +273,14 @@
 
     <script>
       /* =====================================================
-   BACKEND URL
-===================================================== */
+         BACKEND URL
+      ===================================================== */
 
       const API_BASE_URL = "http://127.0.0.1:8000";
 
       /* =====================================================
-   GET LOGIN TOKEN
-===================================================== */
+         GET LOGIN TOKEN
+      ===================================================== */
 
       function getAccessToken() {
         const possibleKeys = ["access_token", "accessToken", "token"];
@@ -297,8 +297,8 @@
       }
 
       /* =====================================================
-   AUTHORIZATION HEADER
-===================================================== */
+         AUTHORIZATION HEADER
+      ===================================================== */
 
       function getAuthHeaders() {
         const token = getAccessToken();
@@ -311,8 +311,8 @@
       }
 
       /* =====================================================
-   LOGIN CHECK
-===================================================== */
+         LOGIN CHECK
+      ===================================================== */
 
       function checkLogin() {
         const token = getAccessToken();
@@ -327,22 +327,22 @@
       }
 
       /* =====================================================
-   SHOW ERROR
-===================================================== */
+         SHOW ERROR
+      ===================================================== */
 
       function showError(message) {
         const container = document.getElementById("historyContainer");
 
         container.innerHTML = `
-    <div class="error">
-      ${message}
-    </div>
-  `;
+          <div class="error">
+            ${message}
+          </div>
+        `;
       }
 
       /* =====================================================
-   SHOW MESSAGE
-===================================================== */
+         SHOW MESSAGE
+      ===================================================== */
 
       function showMessage(message, success = true) {
         const box = document.getElementById("message");
@@ -355,8 +355,8 @@
       }
 
       /* =====================================================
-   LOAD PATIENT PROFILE
-===================================================== */
+         LOAD PATIENT PROFILE
+      ===================================================== */
 
       async function loadPatientProfile() {
         const token = getAccessToken();
@@ -395,19 +395,19 @@
       }
 
       /* =====================================================
-   LOAD MEDICAL HISTORY FROM MYSQL
-===================================================== */
+         LOAD MEDICAL HISTORY
+      ===================================================== */
 
       async function loadMedicalHistory() {
         const container = document.getElementById("historyContainer");
 
         container.innerHTML = `
-    <div class="history-box">
-      <span class="loading">
-        Loading medical history...
-      </span>
-    </div>
-  `;
+          <div class="history-box">
+            <span class="loading">
+              Loading medical history...
+            </span>
+          </div>
+        `;
 
         const token = getAccessToken();
 
@@ -435,7 +435,13 @@
             throw new Error("Failed to load medical history");
           }
 
-          const history = await response.json();
+          /*
+           * FIX:
+           * Backend may return null when the patient
+           * does not have medical history yet.
+           * Convert null into an empty object.
+           */
+          const history = (await response.json()) || {};
 
           console.log("Medical history from backend:", history);
 
@@ -448,10 +454,17 @@
       }
 
       /* =====================================================
-   DISPLAY MEDICAL HISTORY
-===================================================== */
+         DISPLAY MEDICAL HISTORY
+      ===================================================== */
 
       function displayHistory(history) {
+        /*
+         * Extra safety:
+         * If history is null/undefined,
+         * use an empty object.
+         */
+        history = history || {};
+
         const container = document.getElementById("historyContainer");
 
         container.innerHTML = "";
@@ -459,8 +472,8 @@
         let hasData = false;
 
         /* =========================
-     DISEASES
-  ========================= */
+           DISEASES
+        ========================= */
 
         if (Array.isArray(history.diseases) && history.diseases.length > 0) {
           history.diseases.forEach(function (disease) {
@@ -472,11 +485,11 @@
               box.className = "history-box";
 
               box.innerHTML = `
-            <strong>
-              🩺 Disease / Condition:
-            </strong>
-            ${escapeHtml(disease)}
-          `;
+                  <strong>
+                    🩺 Disease / Condition:
+                  </strong>
+                  ${escapeHtml(disease)}
+                `;
 
               container.appendChild(box);
             }
@@ -484,8 +497,8 @@
         }
 
         /* =========================
-     ALLERGIES
-  ========================= */
+           ALLERGIES
+        ========================= */
 
         if (Array.isArray(history.allergies) && history.allergies.length > 0) {
           history.allergies.forEach(function (allergy) {
@@ -497,11 +510,11 @@
               box.className = "history-box";
 
               box.innerHTML = `
-            <strong>
-              ⚠️ Allergy:
-            </strong>
-            ${escapeHtml(allergy)}
-          `;
+                  <strong>
+                    ⚠️ Allergy:
+                  </strong>
+                  ${escapeHtml(allergy)}
+                `;
 
               container.appendChild(box);
             }
@@ -509,8 +522,8 @@
         }
 
         /* =========================
-     CURRENT MEDICATIONS
-  ========================= */
+           CURRENT MEDICATIONS
+        ========================= */
 
         if (
           Array.isArray(history.current_medications) &&
@@ -525,11 +538,11 @@
               box.className = "history-box";
 
               box.innerHTML = `
-            <strong>
-              💊 Current Medication:
-            </strong>
-            ${escapeHtml(medicine)}
-          `;
+                  <strong>
+                    💊 Current Medication:
+                  </strong>
+                  ${escapeHtml(medicine)}
+                `;
 
               container.appendChild(box);
             }
@@ -537,8 +550,8 @@
         }
 
         /* =========================
-     SURGERY HISTORY
-  ========================= */
+           SURGERY HISTORY
+        ========================= */
 
         if (
           Array.isArray(history.surgery_history) &&
@@ -553,11 +566,11 @@
               box.className = "history-box";
 
               box.innerHTML = `
-            <strong>
-              🏥 Surgery:
-            </strong>
-            ${escapeHtml(surgery)}
-          `;
+                  <strong>
+                    🏥 Surgery:
+                  </strong>
+                  ${escapeHtml(surgery)}
+                `;
 
               container.appendChild(box);
             }
@@ -565,8 +578,8 @@
         }
 
         /* =========================
-     VACCINATION
-  ========================= */
+           VACCINATION
+        ========================= */
 
         if (
           Array.isArray(history.vaccination_records) &&
@@ -581,11 +594,11 @@
               box.className = "history-box";
 
               box.innerHTML = `
-            <strong>
-              💉 Vaccination:
-            </strong>
-            ${escapeHtml(vaccination)}
-          `;
+                  <strong>
+                    💉 Vaccination:
+                  </strong>
+                  ${escapeHtml(vaccination)}
+                `;
 
               container.appendChild(box);
             }
@@ -593,11 +606,12 @@
         }
 
         /* =========================
-     INSURANCE
-  ========================= */
+           INSURANCE
+        ========================= */
 
         if (
           history.insurance_details &&
+          typeof history.insurance_details === "object" &&
           Object.keys(history.insurance_details).length > 0
         ) {
           hasData = true;
@@ -607,24 +621,20 @@
           box.className = "history-box";
 
           box.innerHTML = `
-      <strong>
-        🛡️ Insurance Details:
-      </strong>
-      ${escapeHtml(JSON.stringify(history.insurance_details))}
-    `;
+            <strong>
+              🛡️ Insurance Details:
+            </strong>
+            ${escapeHtml(JSON.stringify(history.insurance_details))}
+          `;
 
           container.appendChild(box);
         }
 
         /* =========================
-     NOTES
-  ========================= */
+           NOTES
+        ========================= */
 
-        if (
-          history.notes &&
-          history.notes !== "string" &&
-          history.notes.trim() !== ""
-        ) {
+        if (typeof history.notes === "string" && history.notes.trim() !== "") {
           hasData = true;
 
           const box = document.createElement("div");
@@ -632,34 +642,34 @@
           box.className = "history-box";
 
           box.innerHTML = `
-      <strong>
-        📝 Medical Notes:
-      </strong>
-      <br>
-      ${escapeHtml(history.notes)}
-    `;
+            <strong>
+              📝 Medical Notes:
+            </strong>
+            <br>
+            ${escapeHtml(history.notes)}
+          `;
 
           container.appendChild(box);
         }
 
         /* =========================
-     EMPTY
-  ========================= */
+           EMPTY
+        ========================= */
 
         if (!hasData) {
           container.innerHTML = `
-      <div class="history-box">
-        <span class="empty">
-          No medical history added yet.
-        </span>
-      </div>
-    `;
+            <div class="history-box">
+              <span class="empty">
+                No medical history added yet.
+              </span>
+            </div>
+          `;
         }
       }
 
       /* =====================================================
-   SAVE MEDICAL HISTORY TO MYSQL
-===================================================== */
+         SAVE MEDICAL HISTORY
+      ===================================================== */
 
       async function saveHistory() {
         const disease = document.getElementById("disease").value.trim();
@@ -671,8 +681,8 @@
         const notes = document.getElementById("notes").value.trim();
 
         /* =========================
-     VALIDATION
-  ========================= */
+           VALIDATION
+        ========================= */
 
         if (!disease) {
           alert("Please enter Disease / Condition.");
@@ -696,8 +706,8 @@
 
         try {
           /* =========================
-       GET EXISTING DATA
-    ========================= */
+             GET EXISTING DATA
+          ========================= */
 
           const getResponse = await fetch(
             API_BASE_URL + "/api/patient/history",
@@ -711,11 +721,16 @@
             throw new Error("Unable to get existing history");
           }
 
-          const existing = await getResponse.json();
+          /*
+           * FIX:
+           * Backend can return null when
+           * no history exists yet.
+           */
+          const existing = (await getResponse.json()) || {};
 
           /* =========================
-       PREPARE ARRAYS
-    ========================= */
+             PREPARE ARRAYS
+          ========================= */
 
           let diseases = Array.isArray(existing.diseases)
             ? [...existing.diseases]
@@ -726,8 +741,8 @@
             : [];
 
           /* =========================
-       REMOVE DEFAULT VALUES
-    ========================= */
+             REMOVE DEFAULT VALUES
+          ========================= */
 
           diseases = diseases.filter(
             (item) => item !== "No known chronic disease",
@@ -736,22 +751,22 @@
           medications = medications.filter((item) => item !== "");
 
           /* =========================
-       ADD NEW DISEASE
-    ========================= */
+             ADD NEW DISEASE
+          ========================= */
 
           diseases.push(disease);
 
           /* =========================
-       ADD MEDICATION
-    ========================= */
+             ADD MEDICATION
+          ========================= */
 
           if (treatment) {
             medications.push(treatment);
           }
 
           /* =========================
-       CREATE NOTE
-    ========================= */
+             CREATE NOTE
+          ========================= */
 
           let newNote = `Disease: ${disease}`;
 
@@ -765,15 +780,19 @@
 
           let oldNotes = existing.notes || "";
 
-          if (oldNotes === "string") {
+          /*
+           * FIX:
+           * Correctly check the TYPE of notes.
+           */
+          if (typeof oldNotes !== "string") {
             oldNotes = "";
           }
 
           const finalNotes = oldNotes ? oldNotes + "\n" + newNote : newNote;
 
           /* =========================
-       CREATE REQUEST BODY
-    ========================= */
+             CREATE REQUEST BODY
+          ========================= */
 
           const requestBody = {
             diseases: diseases,
@@ -800,8 +819,8 @@
           console.log("Sending to backend:", requestBody);
 
           /* =========================
-       PUT TO MYSQL BACKEND
-    ========================= */
+             PUT TO BACKEND
+          ========================= */
 
           const response = await fetch(API_BASE_URL + "/api/patient/history", {
             method: "PUT",
@@ -820,17 +839,14 @@
           }
 
           /* =========================
-       SUCCESS
-    ========================= */
+             SUCCESS
+          ========================= */
 
-          showMessage(
-            "✅ Medical history saved successfully to MySQL database.",
-            true,
-          );
+          showMessage("✅ Medical history saved successfully.", true);
 
           /* =========================
-       CLEAR FORM
-    ========================= */
+             CLEAR FORM
+          ========================= */
 
           document.getElementById("disease").value = "";
 
@@ -841,8 +857,8 @@
           document.getElementById("notes").value = "";
 
           /* =========================
-       RELOAD FROM DATABASE
-    ========================= */
+             RELOAD FROM DATABASE
+          ========================= */
 
           await loadMedicalHistory();
         } catch (error) {
@@ -857,8 +873,8 @@
       }
 
       /* =====================================================
-   HTML ESCAPE
-===================================================== */
+         HTML ESCAPE
+      ===================================================== */
 
       function escapeHtml(value) {
         if (value === null || value === undefined) {
@@ -874,16 +890,16 @@
       }
 
       /* =====================================================
-   DASHBOARD
-===================================================== */
+         DASHBOARD
+      ===================================================== */
 
       function goDashboard() {
         window.location.href = "dashboard.html";
       }
 
       /* =====================================================
-   INITIAL LOAD
-===================================================== */
+         INITIAL LOAD
+      ===================================================== */
 
       async function initializePage() {
         if (!checkLogin()) {
@@ -896,8 +912,8 @@
       }
 
       /* =====================================================
-   START
-===================================================== */
+         START
+      ===================================================== */
 
       initializePage();
     </script>
