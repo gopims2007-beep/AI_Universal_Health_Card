@@ -217,6 +217,161 @@
         color: var(--cyan);
       }
 
+      .qr-visual {
+        position: absolute;
+        top: 22%;
+        left: max(6%, calc((100% - 1180px) / 2));
+        z-index: 2;
+        width: 142px;
+        height: 142px;
+        padding: 12px;
+        border: 1px solid rgba(110, 231, 219, 0.48);
+        border-radius: 8px;
+        background: rgba(4, 28, 37, 0.58);
+        box-shadow:
+          0 0 34px rgba(110, 231, 219, 0.18),
+          inset 0 0 22px rgba(110, 231, 219, 0.08);
+        backdrop-filter: blur(12px);
+        animation: qrPulse 3.5s ease-in-out infinite;
+      }
+
+      .qr-visual::before,
+      .qr-visual::after {
+        position: absolute;
+        width: 17px;
+        height: 17px;
+        border-color: var(--cyan);
+        content: "";
+      }
+
+      .qr-visual::before {
+        top: -4px;
+        left: -4px;
+        border-top: 2px solid;
+        border-left: 2px solid;
+      }
+
+      .qr-visual::after {
+        right: -4px;
+        bottom: -4px;
+        border-right: 2px solid;
+        border-bottom: 2px solid;
+      }
+
+      .qr-code {
+        position: relative;
+        width: 100%;
+        height: 100%;
+        overflow: hidden;
+        border: 4px solid rgba(233, 255, 252, 0.92);
+        background:
+          linear-gradient(
+            90deg,
+            transparent 43%,
+            #09232d 43% 57%,
+            transparent 57%
+          ),
+          linear-gradient(
+            0deg,
+            transparent 43%,
+            #09232d 43% 57%,
+            transparent 57%
+          ),
+          repeating-conic-gradient(#e9fffc 0 25%, #09232d 0 50%) 50% / 25px 25px;
+        box-shadow: 0 0 18px rgba(110, 231, 219, 0.4);
+      }
+
+      .qr-code::before {
+        position: absolute;
+        inset: 8px 0 auto;
+        height: 2px;
+        background: var(--cyan);
+        box-shadow: 0 0 12px 3px rgba(110, 231, 219, 0.8);
+        content: "";
+        animation: qrScan 2.4s ease-in-out infinite;
+      }
+
+      .qr-code::after {
+        position: absolute;
+        inset: 0;
+        background: linear-gradient(
+          90deg,
+          transparent,
+          rgba(110, 231, 219, 0.16),
+          transparent
+        );
+        content: "";
+        animation: qrSheen 3.2s linear infinite;
+      }
+
+      .particles {
+        position: absolute;
+        inset: 0;
+        z-index: 0;
+        overflow: hidden;
+        pointer-events: none;
+      }
+
+      .particle {
+        position: absolute;
+        width: 4px;
+        height: 4px;
+        border-radius: 50%;
+        background: var(--cyan);
+        box-shadow: 0 0 12px 2px rgba(110, 231, 219, 0.62);
+        opacity: 0;
+        animation: particleFloat 9s ease-in-out infinite;
+      }
+
+      .particle:nth-child(1) {
+        top: 16%;
+        left: 14%;
+        animation-delay: -1s;
+      }
+      .particle:nth-child(2) {
+        top: 31%;
+        left: 27%;
+        width: 3px;
+        height: 3px;
+        animation-delay: -5s;
+      }
+      .particle:nth-child(3) {
+        top: 63%;
+        left: 8%;
+        animation-delay: -7s;
+      }
+      .particle:nth-child(4) {
+        top: 78%;
+        left: 19%;
+        width: 3px;
+        height: 3px;
+        animation-delay: -3s;
+      }
+      .particle:nth-child(5) {
+        top: 12%;
+        right: 35%;
+        width: 3px;
+        height: 3px;
+        animation-delay: -6s;
+      }
+      .particle:nth-child(6) {
+        top: 42%;
+        right: 11%;
+        animation-delay: -2s;
+      }
+      .particle:nth-child(7) {
+        top: 70%;
+        right: 18%;
+        width: 3px;
+        height: 3px;
+        animation-delay: -8s;
+      }
+      .particle:nth-child(8) {
+        top: 83%;
+        right: 42%;
+        animation-delay: -4s;
+      }
+
       .ambulance,
       .person {
         position: absolute;
@@ -330,6 +485,53 @@
           transform: translateX(-300px);
         }
       }
+      @keyframes qrScan {
+        0%,
+        100% {
+          transform: translateY(0);
+          opacity: 0.55;
+        }
+        50% {
+          transform: translateY(104px);
+          opacity: 1;
+        }
+      }
+      @keyframes qrSheen {
+        from {
+          transform: translateX(-130%);
+        }
+        to {
+          transform: translateX(130%);
+        }
+      }
+      @keyframes qrPulse {
+        0%,
+        100% {
+          box-shadow:
+            0 0 34px rgba(110, 231, 219, 0.18),
+            inset 0 0 22px rgba(110, 231, 219, 0.08);
+        }
+        50% {
+          box-shadow:
+            0 0 48px rgba(110, 231, 219, 0.34),
+            inset 0 0 28px rgba(110, 231, 219, 0.13);
+        }
+      }
+      @keyframes particleFloat {
+        0%,
+        100% {
+          opacity: 0;
+          transform: translate3d(0, 20px, 0) scale(0.7);
+        }
+        25%,
+        75% {
+          opacity: 0.65;
+        }
+        50% {
+          opacity: 0.95;
+          transform: translate3d(18px, -34px, 0) scale(1);
+        }
+      }
 
       @media (max-width: 760px) {
         .site-header {
@@ -357,6 +559,18 @@
         .hero-copy {
           max-width: 350px;
           font-size: 16px;
+        }
+        .qr-visual {
+          top: auto;
+          right: 16px;
+          bottom: 290px;
+          left: auto;
+          width: 104px;
+          height: 104px;
+          padding: 9px;
+        }
+        .qr-code::before {
+          inset: 6px 0 auto;
         }
         .glass-card {
           top: auto;
@@ -391,6 +605,45 @@
         .ecg {
           bottom: 20px;
           width: 250px;
+        }
+      }
+
+      @media (max-width: 430px) {
+        .site-header {
+          width: calc(100% - 24px);
+        }
+        .brand {
+          gap: 7px;
+          font-size: 8px;
+        }
+        .brand-mark {
+          width: 28px;
+          height: 28px;
+          font-size: 13px;
+        }
+        .actions {
+          gap: 5px;
+        }
+        .action {
+          min-width: 68px;
+          padding: 9px 8px;
+          font-size: 8px;
+          letter-spacing: 0.1em;
+        }
+        .hero-inner {
+          width: calc(100% - 24px);
+        }
+        .qr-visual {
+          right: 12px;
+          bottom: 284px;
+          width: 88px;
+          height: 88px;
+          padding: 7px;
+        }
+        .glass-card {
+          right: 12px;
+          bottom: 104px;
+          width: 202px;
         }
       }
       @media (prefers-reduced-motion: reduce) {
@@ -429,6 +682,19 @@
             A secure digital health identity designed to keep the moments that
             matter close at hand.
           </p>
+        </div>
+        <div class="particles" aria-hidden="true">
+          <span class="particle"></span>
+          <span class="particle"></span>
+          <span class="particle"></span>
+          <span class="particle"></span>
+          <span class="particle"></span>
+          <span class="particle"></span>
+          <span class="particle"></span>
+          <span class="particle"></span>
+        </div>
+        <div class="qr-visual" aria-label="Decorative QR visual">
+          <div class="qr-code"></div>
         </div>
         <aside class="glass-card" aria-label="Secure health identity preview">
           <p class="card-label">Health identity</p>
