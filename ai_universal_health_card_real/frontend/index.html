@@ -136,6 +136,45 @@
         margin: 0 auto;
         padding-top: 74px;
       }
+      .college-title {
+        max-width: 930px;
+        color: var(--ink);
+        font-family: "Trebuchet MS", sans-serif;
+        font-size: clamp(2.4rem, 6.7vw, 6.7rem);
+        font-weight: 700;
+        letter-spacing: -0.045em;
+        line-height: 1.02;
+        text-shadow:
+          0 0 12px rgba(255, 255, 255, 0.36),
+          0 0 34px rgba(110, 231, 219, 0.48);
+        animation: collegeJump 1.2s cubic-bezier(0.2, 1.4, 0.4, 1) both;
+      }
+      .college-title span {
+        display: inline;
+        background: linear-gradient(
+          110deg,
+          #fff 15%,
+          #c9fff8 43%,
+          #fff 55%,
+          #6ee7db 74%,
+          #fff 90%
+        );
+        background-size: 230% auto;
+        background-clip: text;
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        animation: collegeShimmer 4s linear 1.2s infinite;
+      }
+      .college-title span::after {
+        display: inline-block;
+        margin-left: 0.14em;
+        color: var(--cyan);
+        content: "✦";
+        font-size: 0.3em;
+        vertical-align: top;
+        -webkit-text-fill-color: var(--cyan);
+        animation: collegeSparkle 2.5s ease-in-out infinite;
+      }
       .eyebrow {
         margin-bottom: 24px;
         color: var(--cyan);
@@ -459,6 +498,38 @@
           transform: translateX(calc(100vw + 180px));
         }
       }
+      @keyframes collegeJump {
+        0% {
+          opacity: 0;
+          transform: translateY(48px) scale(0.8) rotate(-2deg);
+        }
+        55% {
+          transform: translateY(-13px) scale(1.04) rotate(1deg);
+        }
+        75% {
+          transform: translateY(5px) scale(0.98);
+        }
+        100% {
+          opacity: 1;
+          transform: none;
+        }
+      }
+      @keyframes collegeShimmer {
+        to {
+          background-position: 230% center;
+        }
+      }
+      @keyframes collegeSparkle {
+        0%,
+        100% {
+          opacity: 0.3;
+          transform: scale(0.7) rotate(0);
+        }
+        50% {
+          opacity: 1;
+          transform: scale(1.4) rotate(25deg);
+        }
+      }
       @keyframes bob {
         0%,
         100% {
@@ -676,12 +747,12 @@
     <main>
       <section class="hero" aria-labelledby="hero-title">
         <div class="hero-inner">
-          <p class="eyebrow">A calmer way forward</p>
-          <h1 id="hero-title">Healthcare,<br /><em>connected.</em></h1>
-          <p class="hero-copy">
-            A secure digital health identity designed to keep the moments that
-            matter close at hand.
-          </p>
+          <h1 id="hero-title" class="college-title">
+            <span
+              >Government Thirumagal Mills College, Gudiyatham-632602, Vellore,
+              TamilNadu 2026</span
+            >
+          </h1>
         </div>
         <div class="particles" aria-hidden="true">
           <span class="particle"></span>
