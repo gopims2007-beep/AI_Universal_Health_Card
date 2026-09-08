@@ -14,7 +14,7 @@ const APP_SHELL = [
   "./css/app.css",
   "./js/app.js",
   "./hospital.jpg",
-  "./assets/app_logo.jpeg",
+  "./assets/website_logo.jpeg",
   "./manifest.webmanifest"
 ];
 
