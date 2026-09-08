@@ -137,17 +137,19 @@
         padding-top: 74px;
       }
       .college-title {
-        max-width: 930px;
+        max-width: 1080px;
+        margin: 0 auto;
         color: var(--ink);
         font-family: "Trebuchet MS", sans-serif;
-        font-size: clamp(2.4rem, 6.7vw, 6.7rem);
+        font-size: clamp(2.1rem, 7vw, 7.6rem);
         font-weight: 700;
         letter-spacing: -0.045em;
-        line-height: 1.02;
+        line-height: 0.98;
+        overflow-wrap: anywhere;
+        text-wrap: balance;
         text-shadow:
           0 0 12px rgba(255, 255, 255, 0.36),
           0 0 34px rgba(110, 231, 219, 0.48);
-        animation: collegeJump 1.2s cubic-bezier(0.2, 1.4, 0.4, 1) both;
       }
       .college-title span {
         display: inline;
@@ -458,25 +460,85 @@
       }
 
       .reveal-section {
-        padding: 120px 24px 150px;
-        background: var(--navy);
+        position: relative;
+        display: grid;
+        min-height: 78vh;
+        place-items: center;
+        overflow: hidden;
+        padding: 140px 24px 170px;
+        background:
+          radial-gradient(
+            circle at 50% 45%,
+            rgba(110, 231, 219, 0.13),
+            transparent 36%
+          ),
+          var(--navy);
         text-align: center;
       }
+      .reveal-section::before {
+        position: absolute;
+        inset: 0;
+        opacity: 0.32;
+        background-image:
+          linear-gradient(rgba(205, 255, 247, 0.05) 1px, transparent 1px),
+          linear-gradient(90deg, rgba(205, 255, 247, 0.05) 1px, transparent 1px);
+        background-size: 72px 72px;
+        content: "";
+        mask-image: linear-gradient(
+          to bottom,
+          transparent,
+          black 25%,
+          transparent 90%
+        );
+      }
       .reveal-section > div {
-        max-width: 650px;
+        position: relative;
+        z-index: 1;
+        width: min(1180px, 100%);
         margin: auto;
       }
-      .reveal-section h2 {
-        margin-bottom: 20px;
-        font-size: clamp(2.5rem, 6vw, 5.5rem);
-        font-weight: 400;
-        letter-spacing: -0.05em;
-        line-height: 0.95;
+      .reveal-section .eyebrow {
+        margin-bottom: 30px;
       }
-      .reveal-section p {
-        color: var(--muted);
-        font-size: 17px;
-        line-height: 1.8;
+      .reveal-section h2 {
+        max-width: 1120px;
+        margin: 0 auto;
+        color: var(--ink);
+        font-family: "Trebuchet MS", sans-serif;
+        font-size: clamp(2.4rem, 8vw, 8.7rem);
+        font-weight: 700;
+        letter-spacing: -0.055em;
+        line-height: 0.98;
+        overflow-wrap: anywhere;
+        text-shadow:
+          0 0 14px rgba(255, 255, 255, 0.4),
+          0 0 42px rgba(110, 231, 219, 0.5);
+      }
+      .reveal-section h2 span {
+        display: inline;
+        background: linear-gradient(
+          110deg,
+          #fff 12%,
+          #c9fff8 40%,
+          #fff 52%,
+          #6ee7db 72%,
+          #fff 90%
+        );
+        background-size: 230% auto;
+        background-clip: text;
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        animation: collegeShimmer 4s linear 0.5s infinite;
+      }
+      .reveal-section h2 span::after {
+        display: inline-block;
+        margin-left: 0.12em;
+        color: var(--cyan);
+        content: "✦";
+        font-size: 0.28em;
+        vertical-align: top;
+        -webkit-text-fill-color: var(--cyan);
+        animation: collegeSparkle 2.5s ease-in-out infinite;
       }
       .reveal {
         opacity: 0;
@@ -488,6 +550,9 @@
       .reveal.visible {
         opacity: 1;
         transform: translateY(0);
+      }
+      .reveal.visible h2 {
+        animation: collegeJump 1.2s cubic-bezier(0.2, 1.4, 0.4, 1) both;
       }
 
       @keyframes drive {
@@ -747,12 +812,12 @@
     <main>
       <section class="hero" aria-labelledby="hero-title">
         <div class="hero-inner">
-          <h1 id="hero-title" class="college-title">
-            <span
-              >Government Thirumagal Mills College, Gudiyatham-632602, Vellore,
-              TamilNadu 2026</span
-            >
-          </h1>
+          <p class="eyebrow">A calmer way forward</p>
+          <h1 id="hero-title">Healthcare,<br /><em>connected.</em></h1>
+          <p class="hero-copy">
+            A secure digital health identity designed to keep the moments that
+            matter close at hand.
+          </p>
         </div>
         <div class="particles" aria-hidden="true">
           <span class="particle"></span>
@@ -785,12 +850,13 @@
       </section>
       <section class="reveal-section">
         <div class="reveal">
-          <p class="eyebrow">Designed around you</p>
-          <h2>One identity.<br /><em>More peace of mind.</em></h2>
-          <p>
-            Simple access, thoughtful design, and a clearer way to carry your
-            essential health identity wherever life takes you.
-          </p>
+          <p class="eyebrow">Connected by care / 2026</p>
+          <h2>
+            <span
+              >Government Thirumagal Mills College, Gudiyatham-632602, Vellore,
+              TamilNadu 2026</span
+            >
+          </h2>
         </div>
       </section>
     </main>
