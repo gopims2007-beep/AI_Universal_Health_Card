@@ -4,6 +4,12 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <meta name="theme-color" content="#071a25" />
+    <meta name="description" content="AI Universal Health Card, a secure digital health identity." />
+    <meta name="mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+    <link rel="manifest" href="manifest.webmanifest" />
+    <link rel="apple-touch-icon" href="assets/app_logo.jpeg" />
     <title>AI Universal Health Card</title>
     <style>
       :root {
@@ -206,6 +212,27 @@
         top: 24%;
         right: max(6%, calc((100% - 1180px) / 2));
         width: 285px;
+        height: 190px;
+        perspective: 1100px;
+        animation: drift 6s ease-in-out infinite;
+      }
+      .card-flipper {
+        position: relative;
+        width: 100%;
+        height: 100%;
+        cursor: pointer;
+        transform-style: preserve-3d;
+        transition: transform 700ms cubic-bezier(0.2, 0.75, 0.25, 1);
+      }
+      .glass-card.is-flipped .card-flipper {
+        transform: rotateY(180deg);
+      }
+      .card-face {
+        position: absolute;
+        inset: 0;
+        display: flex;
+        flex-direction: column;
+        justify-content: space-between;
         padding: 24px;
         border: 1px solid var(--line);
         border-radius: 8px;
@@ -214,10 +241,13 @@
           0 22px 80px rgba(0, 0, 0, 0.35),
           inset 0 1px rgba(255, 255, 255, 0.14);
         backdrop-filter: blur(18px);
-        animation: drift 6s ease-in-out infinite;
+        backface-visibility: hidden;
+      }
+      .card-face-back {
+        transform: rotateY(180deg);
+        background: rgba(12, 47, 55, 0.82);
       }
       .card-label {
-        margin-bottom: 24px;
         color: var(--cyan);
         font-family: "Trebuchet MS", sans-serif;
         font-size: 10px;
@@ -229,7 +259,6 @@
         display: flex;
         align-items: center;
         gap: 10px;
-        margin-bottom: 20px;
         font-family: "Trebuchet MS", sans-serif;
         font-size: 12px;
       }
@@ -242,7 +271,6 @@
       }
       .card-rule {
         height: 1px;
-        margin: 16px 0;
         background: var(--line);
       }
       .card-foot {
@@ -256,6 +284,57 @@
       }
       .card-foot strong {
         color: var(--cyan);
+      }
+      .card-detail {
+        color: var(--muted);
+        font-size: 14px;
+        line-height: 1.45;
+      }
+      .flip-hint {
+        position: absolute;
+        right: 24px;
+        bottom: 15px;
+        color: rgba(244, 251, 250, 0.64);
+        font-family: "Trebuchet MS", sans-serif;
+        font-size: 9px;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+      }
+      .module-grid {
+        display: grid;
+        grid-template-columns: repeat(4, 1fr);
+        gap: 12px;
+        max-width: 960px;
+        margin: 48px auto 0;
+        text-align: left;
+      }
+      .module-link {
+        min-height: 112px;
+        padding: 18px;
+        border: 1px solid rgba(205, 255, 247, 0.18);
+        border-radius: 6px;
+        background: rgba(7, 31, 42, 0.52);
+        color: var(--ink);
+        text-decoration: none;
+        transition: transform 180ms ease, border-color 180ms ease, background 180ms ease;
+      }
+      .module-link:hover,
+      .module-link:focus-visible {
+        transform: translateY(-5px);
+        border-color: var(--cyan);
+        background: rgba(16, 58, 65, 0.72);
+        outline: none;
+      }
+      .module-link strong {
+        display: block;
+        margin-bottom: 9px;
+        font-family: "Trebuchet MS", sans-serif;
+        font-size: 13px;
+      }
+      .module-link span {
+        color: var(--muted);
+        font-size: 13px;
+        line-height: 1.4;
       }
 
       .qr-visual {
@@ -540,6 +619,13 @@
         -webkit-text-fill-color: var(--cyan);
         animation: collegeSparkle 2.5s ease-in-out infinite;
       }
+      .reveal-section .section-note {
+        max-width: 620px;
+        margin: 20px auto 0;
+        color: var(--muted);
+        font-size: 17px;
+        line-height: 1.6;
+      }
       .reveal {
         opacity: 0;
         transform: translateY(38px);
@@ -713,13 +799,14 @@
           right: 16px;
           bottom: 112px;
           width: 220px;
+          height: 168px;
+        }
+        .card-face {
           padding: 17px;
         }
-        .card-label {
-          margin-bottom: 15px;
-        }
-        .card-rule {
-          margin: 10px 0;
+        .module-grid {
+          grid-template-columns: repeat(2, 1fr);
+          margin-top: 34px;
         }
         .person {
           bottom: 20%;
@@ -781,6 +868,9 @@
           bottom: 104px;
           width: 202px;
         }
+        .module-grid {
+          grid-template-columns: 1fr;
+        }
       }
       @media (prefers-reduced-motion: reduce) {
         *,
@@ -807,13 +897,18 @@
         <a class="action action-login" href="login.html">Login</a>
         <a class="action action-register" href="register.html">Register</a>
       </nav>
+
     </header>
 
     <main>
+
       <section class="hero" aria-labelledby="hero-title">
         <div class="hero-inner">
           <p class="eyebrow">A calmer way forward</p>
           <h1 id="hero-title">Healthcare,<br /><em>connected.</em></h1>
+          <div class="qr-visual" aria-label="Decorative QR visual">
+          <div class="qr-code"></div>
+        </div>
           <p class="hero-copy">
             A secure digital health identity designed to keep the moments that
             matter close at hand.
@@ -829,17 +924,29 @@
           <span class="particle"></span>
           <span class="particle"></span>
         </div>
-        <div class="qr-visual" aria-label="Decorative QR visual">
-          <div class="qr-code"></div>
-        </div>
-        <aside class="glass-card" aria-label="Secure health identity preview">
-          <p class="card-label">Health identity</p>
-          <p class="card-pulse">
-            <span class="pulse-dot"></span> Connected and ready
-          </p>
-          <div class="card-rule"></div>
-          <div class="card-foot">
-            <span>Protected</span><strong>Active</strong>
+
+        <aside class="glass-card" aria-label="Interactive health identity preview">
+          <div class="card-flipper" tabindex="0" role="button" aria-label="Flip health identity card" aria-pressed="false">
+            <div class="card-face card-face-front">
+              <p class="card-label">Health identity</p>
+              <p class="card-pulse">
+                <span class="pulse-dot"></span> Connected and ready
+              </p>
+              <div class="card-rule"></div>
+              <div class="card-foot">
+                <span>Protected</span><strong>Active</strong>
+              </div>
+              <span class="flip-hint">Tap to explore</span>
+            </div>
+            <div class="card-face card-face-back">
+              <p class="card-label">Emergency view</p>
+              <p class="card-detail">A focused profile for the moments when essential information needs to be found quickly.</p>
+              <div class="card-rule"></div>
+              <div class="card-foot">
+                <span>QR ready</span><strong>Private</strong>
+              </div>
+              <span class="flip-hint">Tap to return</span>
+            </div>
           </div>
         </aside>
         <div class="ambulance" aria-hidden="true">🚑</div>
@@ -851,18 +958,56 @@
       <section class="reveal-section">
         <div class="reveal">
           <p class="eyebrow">Connected by care / 2026</p>
-          <h2>
-            <span
-              >Government Thirumagal Mills College, Gudiyatham-632602, Vellore,
-              TamilNadu 2026</span
-            >
+          
+          <p class="section-note">
+            A single place for your health identity, records, emergency details,
+            and the people you choose to share them with.
+          </p>
+          <div class="module-grid" aria-label="Platform modules">
+            <a class="module-link" href="health-card.html">
+              <strong>Universal card</strong>
+              <span>Your digital identity, ready when you need it.</span>
+            </a>
+            <a class="module-link" href="emergency-qr.html">
+              <strong>Emergency access</strong>
+              <span>Critical details designed for a quick, focused view.</span>
+            </a>
+            <a class="module-link" href="medical-history.html">
+              <strong>Health records</strong>
+              <span>Keep history, reports, and everyday context together.</span>
+            </a>
+            <a class="module-link" href="ai-analysis.html">
+              <strong>AI decision support</strong>
+              <span>Coming carefully, with clear limits and clinical humility.</span>
+            </a>
+          </div>
+          <div>
+            <h2>
+            <span>Government Thirumagal Mills College, Gudiyatham-632602, Vellore, TamilNadu 2026</span>
           </h2>
+          </div>
         </div>
       </section>
     </main>
 
     <script>
       const reveal = document.querySelector(".reveal");
+      const card = document.querySelector(".glass-card");
+      const flipper = document.querySelector(".card-flipper");
+
+      function flipCard() {
+        const flipped = card.classList.toggle("is-flipped");
+        flipper.setAttribute("aria-pressed", String(flipped));
+      }
+
+      flipper.addEventListener("click", flipCard);
+      flipper.addEventListener("keydown", (event) => {
+        if (event.key === "Enter" || event.key === " ") {
+          event.preventDefault();
+          flipCard();
+        }
+      });
+
       const observer = new IntersectionObserver(
         ([entry]) => {
           if (entry.isIntersecting) {
@@ -873,6 +1018,12 @@
         { threshold: 0.2 },
       );
       observer.observe(reveal);
+
+      if ("serviceWorker" in navigator) {
+        window.addEventListener("load", () => {
+          navigator.serviceWorker.register("service-worker.js");
+        });
+      }
     </script>
   </body>
 </html>
